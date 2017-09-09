@@ -13,8 +13,15 @@ namespace electric_shema
     class box
     {
         public string Name { get; set; }
-        public string om { get; set; }
-        public string power { get; set; }
-        public string volt { get; set; }
+        public bool Vertical { get; set; }
+        public object Properties { get; set; }
+        public box()
+        {
+            Vertical = false;
+        }
+    }
+    class Resistor
+    {
+        public double R { get; set; }
     }
 }

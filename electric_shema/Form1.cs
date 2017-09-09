@@ -16,24 +16,39 @@ namespace electric_shema
     {
         PictureBox[,] kletka;
         schema_json schema_now;
-        public Form1()
+
+        private PictureBox createPictureBox(int x,int y)
         {
-            InitializeComponent();
-            kletka = new PictureBox[10, 10];
+            PictureBox pict = new PictureBox();
+            pict.BorderStyle = BorderStyle.FixedSingle;
+            pict.Size = new Size(50, 50);
+            pict.Location = new Point(50 * x, 50 * y);
+            pict.SizeMode = PictureBoxSizeMode.Zoom;
+            pict.Click += picture_click;
+            pict.ContextMenuStrip = contextMenuStrip1;
+            this.Schema.Controls.Add(pict);
+            return pict;
+        }
+        private void CreateNewSchem()
+        {
+            if (kletka != null)
+                for (int i = 0; i < 10; i++)
+                    for (int j = 0; j < 10; j++)
+                        kletka[i, j].Dispose();
+            kletka = new PictureBox[10, 10];            
             schema_now = new schema_json();
             schema_now.kletka = new box[10, 10];
             for (int i = 0; i < 10; i++)
                 for (int j = 0; j < 10; j++)
                 {
-                    kletka[i, j] = new PictureBox();
-                    kletka[i, j].BorderStyle = BorderStyle.FixedSingle;
-                    kletka[i, j].Size = new Size(50, 50);
-                    kletka[i, j].Location = new Point(50 * j, 50 * i);
-                    kletka[i, j].SizeMode = PictureBoxSizeMode.Zoom;
-                    kletka[i, j].Click += picture_click;
-                    this.Schema.Controls.Add(kletka[i, j]);
+                    kletka[i, j] = createPictureBox(j, i);
                     schema_now.kletka[i, j] = new box();
                 }
+        }
+        public Form1()
+        {
+            InitializeComponent();
+            CreateNewSchem();
         }
         private void picture_click(object sender, EventArgs e)
         {
@@ -43,20 +58,31 @@ namespace electric_shema
                     {
                         if (this.Cursor == System.Windows.Forms.Cursors.Hand)
                         {
-                            kletka[i, j].Image = who_checked().Image;
-                            schema_now.kletka[i, j].Name = who_checked().Name;
+                            kletka[i, j].Image = new Bitmap(who_checked(i,j).Image);
+                            schema_now.kletka[i, j].Name = who_checked(i,j).Name;
+                            schema_now.kletka[i, j].Vertical = false;
                             this.Cursor = System.Windows.Forms.Cursors.Default;
                         }
                         break;
                     }
         }
-        private PictureBox who_checked()
+        private PictureBox who_checked(int i,int j)
         {
-            if (radioButton1.Checked) return resistor;
-            else if (radioButton2.Checked) return battery;
+            if (radioButton1.Checked)
+            {
+                schema_now.kletka[i, j].Properties = new Resistor();
+                (schema_now.kletka[i, j].Properties as Resistor).R = 1;
+                return resistor;
+            }
+            else if (radioButton2.Checked)
+            {
+                return battery;
+            }
             else if (radioButton3.Checked) return voltmetr;
             else if (radioButton4.Checked) return ampmetr;
             else if (radioButton5.Checked) return onof;
+            else if (radioButton6.Checked) return Lampa;
+            else if (radioButton7.Checked) return Provod;
             else return null;
         }
         private void button1_Click_1(object sender, EventArgs e)
@@ -89,9 +115,16 @@ namespace electric_shema
                         if (schema_now.kletka[i, j].Name != null)
                         {
                             kletka[i, j].Image = who_name(schema_now.kletka[i, j].Name).Image;
+                            if (schema_now.kletka[i, j].Vertical)
+                            {
+                                kletka[i, j].Image.RotateFlip(RotateFlipType.Rotate90FlipNone);
+                                kletka[i, j].Refresh();
+                            }
+
                         }
                         else
                             kletka[i, j].Image = new Bitmap(50,50);
+                se.Close();
             }
         }
         private PictureBox who_name(string name)
@@ -106,8 +139,87 @@ namespace electric_shema
                 return ampmetr;
             else if (name == onof.Name)
                 return onof;
+            else if (name == Lampa.Name)
+                return Lampa;
+            else if (name == Provod.Name)
+                return Provod;
             else
                 return null;
+        }
+
+        private void contextMenuStrip1_ItemClicked(object sender, ToolStripItemClickedEventArgs e)
+        {
+            if (e.ClickedItem.Text == "Удалить")
+            {
+                Point temp = who_clicked_box(contextMenuStrip1.SourceControl as PictureBox);
+                kletka[temp.X, temp.Y].Name = null;
+                kletka[temp.X, temp.Y].Image = new Bitmap(50, 50);
+                schema_now.kletka[temp.X, temp.Y] = new box();
+            }
+            else if(e.ClickedItem.Text == "Перевернуть")
+            {
+                if ((contextMenuStrip1.SourceControl as PictureBox).Image != null)
+                {
+                    Point temp = who_clicked_box(contextMenuStrip1.SourceControl as PictureBox);
+                    if (!schema_now.kletka[temp.X, temp.Y].Vertical)
+                    {
+                        kletka[temp.X, temp.Y].Image.RotateFlip(RotateFlipType.Rotate90FlipNone);
+                        kletka[temp.X, temp.Y].Refresh();
+                        schema_now.kletka[temp.X, temp.Y].Vertical = true;
+                    }
+                    else
+                    {
+                        kletka[temp.X, temp.Y].Image.RotateFlip(RotateFlipType.Rotate270FlipNone);
+                        kletka[temp.X, temp.Y].Refresh();
+                        schema_now.kletka[temp.X, temp.Y].Vertical = false;
+                    }
+                }
+            }
+            /*else if (e.ClickedItem.Text == "Копировать")
+            {
+                copy = who_clicked_box(contextMenuStrip1.SourceControl as PictureBox);
+                moveto = false;
+                copied = true;
+            }
+            else if (e.ClickedItem.Text == "Переместить")
+            {
+                copy = who_clicked_box(contextMenuStrip1.SourceControl as PictureBox);
+                moveto = true;
+            }
+            else if (e.ClickedItem.Text == "Вставить")
+            {
+                if (copied)
+                {
+                    Point temp = who_clicked_box(contextMenuStrip1.SourceControl as PictureBox);
+                    kletka[temp.X, temp.Y].Name = kletka[copy.X, copy.Y].Name;
+                    kletka[temp.X, temp.Y].Image = new Bitmap(kletka[copy.X, copy.Y].Image);
+                    kletka[temp.X, temp.Y].Refresh();
+                    schema_now.kletka[temp.X, temp.Y] = schema_now.kletka[copy.X, copy.Y];
+                }
+                else if (moveto)
+                {
+                    Point temp = who_clicked_box(contextMenuStrip1.SourceControl as PictureBox);
+                    kletka[temp.X, temp.Y] = kletka[copy.X, copy.Y];
+                    schema_now.kletka[temp.X, temp.Y] = schema_now.kletka[copy.X, copy.Y];
+                    kletka[copy.X, copy.Y] = createPictureBox(copy.Y, copy.X);
+                    moveto = false;
+                }
+                else
+                    MessageBox.Show("Нечего вставлять", "Ошибка!");
+            }*/
+        }
+        private Point who_clicked_box(object sender)
+        {
+            for (int i = 0; i < 10; i++)
+                for (int j = 0; j < 10; j++)
+                    if (sender.Equals(kletka[i, j]))
+                        return new Point(i, j);
+            return new Point(0, 0);
+        }
+
+        private void button4_Click(object sender, EventArgs e)
+        {
+            CreateNewSchem();
         }
     }
 }
