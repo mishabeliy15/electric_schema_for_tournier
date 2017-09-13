@@ -22,7 +22,7 @@ namespace electric_shema
         PictureBox NewElements;
         Point copied;
         bool move = false;
-        private PictureBox createPictureBox(int x,int y)
+        private PictureBox createPictureBox(int x, int y)
         {
             PictureBox pict = new PictureBox();
             pict.BorderStyle = BorderStyle.FixedSingle;
@@ -41,7 +41,7 @@ namespace electric_shema
                     for (int j = 0; j < 10; j++)
                         kletka[i, j].Dispose();
 
-            kletka = new PictureBox[10, 10];            
+            kletka = new PictureBox[10, 10];
             schema_now = new schema_json();
             schema_now.kletka = new box[10, 10];
             for (int i = 0; i < 10; i++)
@@ -131,7 +131,7 @@ namespace electric_shema
         }
         private void delete_properties()
         {
-            if (PropertiesLabels != null && PropertiesTextBox!=null)
+            if (PropertiesLabels != null && PropertiesTextBox != null)
             {
                 for (int i = 0; i < PropertiesLabels.Length; i++)
                 {
@@ -147,7 +147,7 @@ namespace electric_shema
         {
             if (!Char.IsDigit(e.KeyChar) && e.KeyChar != (char)Keys.Back && e.KeyChar != ',')
                 e.Handled = true;
-            else if(e.KeyChar == ',' && (sender as TextBox).Text.Contains("."))
+            else if (e.KeyChar == ',' && (sender as TextBox).Text.Contains("."))
                 e.Handled = true;
         }
         private void textBox_TextChanged(object sender, EventArgs e)
@@ -199,7 +199,7 @@ namespace electric_shema
                 kletka[temp.X, temp.Y].Image = new Bitmap(50, 50);
                 schema_now.kletka[temp.X, temp.Y] = new box();
             }
-            else if(e.ClickedItem.Text == "Повернуть")
+            else if (e.ClickedItem.Text == "Повернуть")
             {
                 if ((contextMenuStrip1.SourceControl as PictureBox).Image != null)
                 {
@@ -384,7 +384,7 @@ namespace electric_shema
             if (move)
             {
                 kletka[copied.X, copied.Y].Name = null;
-                kletka[copied.X, copied.Y].Image = new Bitmap(50,50);
+                kletka[copied.X, copied.Y].Image = new Bitmap(50, 50);
                 schema_now.kletka[copied.X, copied.Y] = new box();
                 move = false;
             }
@@ -403,16 +403,24 @@ namespace electric_shema
                         if (schema_now.kletka[i, j].Name == battery.Name)
                         {
                             schema_now.power = true;
-                            schema_now.battery = new Point(i,j);
+                            schema_now.battery = new Point(i, j);
                         }
             if (schema_now.power)
             {
-                i = 0; u = 0; r = 0; f = new bool[10, 10];valid = false;
+                i = 0; u = 0; r = 0; f = new bool[10, 10]; valid = false;
                 for (int i = 0; i < 10; i++) for (int j = 0; j < 10; j++) f[i, j] = false;
-                dfs(schema_now.battery.X, schema_now.battery.Y);
+                dfs(schema_now.battery.X, schema_now.battery.Y, 0);
+            }
+            if (valid)
+            {
+                 textBox1.Text = "I = " + (r > 0 ?(i = u / r).ToString():"Деление на 0!") + "; U = " + u.ToString() + "; R = " + r.ToString(); 
             }
         }
-        private void dfs(int i,int j)
+        private bool isflip(int i,int j){ return schema_now.kletka[i, j].Name == Provod_povorot.Name; }
+
+        private bool turn(int i, int j, int Angle) { return schema_now.kletka[i, j].Rotate == Angle; }
+
+        private void dfs(int i,int j,int k)
         {
             if (!valid)
             {
@@ -426,24 +434,98 @@ namespace electric_shema
                     r += schema_now.kletka[i, j].R;
                 };
 
-                if (schema_now.kletka[i, j].Name != Provod_povorot.Name)
+                if (!isflip(i,j))
                     switch (schema_now.kletka[i, j].Rotate)
                     {
                         case 0:
-                            if (j + 1 < 10 && schema_now.kletka[i, j + 1].Rotate == 0)
-                                if (!f[i, j + 1]) dfs(i, j + 1);
-                                else if (new Point(i, j + 1) == schema_now.battery) { valid = true; return; }
+                            if (j + 1 < 10)
+                            {
+                                if (turn(i, j + 1, 0) || (isflip(i, j + 1) && turn(i, j + 1, 90)))
+                                    if (!f[i, j + 1]) dfs(i, j + 1, k + 1);
+                                    else if (new Point(i, j + 1) == schema_now.battery && k > 1) { valid = true; return; }
+                            }
+                            if (j - 1 > 0)
+                            {
+                                if ((!isflip(i, j - 1) && turn(i, j - 1, 0)) || (isflip(i, j - 1) && (turn(i, j - 1, 180) || turn(i, j - 1, 270))))
+                                    if (!f[i, j - 1]) dfs(i, j - 1, k + 1);
+                                    else if (new Point(i, j - 1) == schema_now.battery && k > 1) { valid = true; return; }
+                            }
                             break;
                         case 90:
-                            if (i + 1 < 10 && ((schema_now.kletka[i + 1, j].Rotate == 90) || (schema_now.kletka[i + 1, j].Rotate == 180)))
-                                if (!f[i + 1, j]) dfs(i + 1, j);
-                                else if (new Point(i + 1, j) == schema_now.battery) { valid = true; return; }
+                            if (i + 1 < 10)
+                            {
+                                if (turn(i + 1, j, 90) || turn(i + 1, j, 180))
+                                    if (!f[i + 1, j]) dfs(i + 1, j, k + 1);
+                                    else if (new Point(i + 1, j) == schema_now.battery && k > 1) { valid = true; return; }
+                            }
+                            if (i - 1 > 0)
+                            {
+                                if ( (!isflip(i-1,j) && turn(i - 1, j, 90)) || (isflip(i-1,j)&&(turn(i-1,j,0)||turn(i-1,j,270))))
+                                    if (!f[i - 1, j]) dfs(i - 1, j, k + 1);
+                                    else if (new Point(i - 1, j) == schema_now.battery && k > 1) { valid = true; return; }
+                            }
                             break;
                     }
-                else if(schema_now.kletka[i, j].Name == Provod_povorot.Name)
-                {
-
-                }
+                else if(schema_now.kletka[i, j].Name == Provod_povorot.Name)//для поворотливых проводов
+                    switch (schema_now.kletka[i, j].Rotate)
+                    {
+                        case 0:
+                            if (i + 1 < 10)
+                            {
+                                if (turn(i + 1, j, 90) || turn(i + 1, j, 180))
+                                    if (!f[i + 1, j]) dfs(i + 1, j, k + 1);
+                                    else if (new Point(i + 1, j) == schema_now.battery && k > 1) { valid = true; return; }
+                            }
+                            if (j - 1 > 0)
+                            {
+                                if ((!isflip(i, j - 1) && turn(i, j - 1, 0)) || (isflip(i, j - 1) && (turn(i, j - 1, 180) || turn(i, j - 1, 270))))
+                                    if (!f[i, j - 1]) dfs(i, j - 1, k + 1);
+                                    else if (new Point(i, j - 1) == schema_now.battery && k > 1) { valid = true; return; }
+                            }
+                            break;
+                        case 90:
+                            if (i - 1 > 0)
+                            {
+                                if ((!isflip(i - 1, j) && turn(i - 1, j, 90)) || (isflip(i - 1, j) && (turn(i - 1, j, 0) || turn(i - 1, j, 270))))
+                                    if (!f[i - 1, j]) dfs(i - 1, j, k + 1);
+                                    else if (new Point(i - 1, j) == schema_now.battery && k > 1) { valid = true; return; }
+                            }
+                            if (j - 1 > 0)
+                            {
+                                if ((!isflip(i, j - 1) && turn(i, j - 1, 0)) || (isflip(i, j - 1) && (turn(i, j - 1, 180) || turn(i, j - 1, 270))))
+                                    if (!f[i, j - 1]) dfs(i, j - 1, k + 1);
+                                    else if (new Point(i, j - 1) == schema_now.battery && k > 1) { valid = true; return; }
+                            }
+                            break;
+                        case 180:
+                            if (i - 1 > 0)
+                            {
+                                if ((!isflip(i - 1, j) && turn(i - 1, j, 90)) || (isflip(i - 1, j) && (turn(i - 1, j, 0) || turn(i - 1, j, 270))))
+                                    if (!f[i - 1, j]) dfs(i - 1, j, k + 1);
+                                    else if (new Point(i - 1, j) == schema_now.battery && k > 1) { valid = true; return; }
+                            }
+                            if (j + 1 < 10)
+                            {
+                                if (turn(i, j + 1, 0) || (isflip(i, j + 1) && turn(i, j + 1, 90)))
+                                    if (!f[i, j + 1]) dfs(i, j + 1, k + 1);
+                                    else if (new Point(i, j + 1) == schema_now.battery && k > 1) { valid = true; return; }
+                            }
+                            break;
+                        case 270:
+                            if (i + 1 < 10)
+                            {
+                                if (turn(i + 1, j, 90) || turn(i + 1, j, 180))
+                                    if (!f[i + 1, j]) dfs(i + 1, j, k + 1);
+                                    else if (new Point(i + 1, j) == schema_now.battery && k > 1) { valid = true; return; }
+                            }
+                            if (j + 1 < 10)
+                            {
+                                if (turn(i, j + 1, 0) || (isflip(i, j + 1) && turn(i, j + 1, 90)))
+                                    if (!f[i, j + 1]) dfs(i, j + 1, k + 1);
+                                    else if (new Point(i, j + 1) == schema_now.battery && k > 1) { valid = true; return; }
+                            }
+                            break;
+                    }
             }
             else return;
         }
