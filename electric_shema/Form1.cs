@@ -50,6 +50,7 @@ namespace electric_shema
                     kletka[i, j] = createPictureBox(j, i);
                     schema_now.kletka[i, j] = new box();
                 }
+            delete_properties();
         }
         public Form1()
         {
@@ -280,6 +281,7 @@ namespace electric_shema
                             kletka[i, j].Image = new Bitmap(50, 50);
                 se.Close();
             }
+            delete_properties();
         }
         private void сохранитьToolStripMenuItem_Click(object sender, EventArgs e)
         {
@@ -414,6 +416,10 @@ namespace electric_shema
             if (valid)
             {
                  textBox1.Text = "I = " + (r > 0 ?(i = u / r).ToString():"Деление на 0!") + "; U = " + u.ToString() + "; R = " + r.ToString(); 
+            }
+            else
+            {
+                textBox1.Text = "Цепь не замкнута!";
             }
         }
         private bool isflip(int i,int j){ return schema_now.kletka[i, j].Name == Provod_povorot.Name; }
