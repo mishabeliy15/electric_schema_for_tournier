@@ -56,7 +56,6 @@
             this.удалитьToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.button4 = new System.Windows.Forms.Button();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
-            this.button5 = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.resistor)).BeginInit();
             this.Elemets.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.Provod)).BeginInit();
@@ -66,7 +65,6 @@
             ((System.ComponentModel.ISupportInitialize)(this.voltmetr)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.battery)).BeginInit();
             this.contextMenuStrip1.SuspendLayout();
-            this.groupBox1.SuspendLayout();
             this.SuspendLayout();
             // 
             // Schema
@@ -263,7 +261,7 @@
             // 
             // button2
             // 
-            this.button2.Location = new System.Drawing.Point(395, 12);
+            this.button2.Location = new System.Drawing.Point(397, 12);
             this.button2.Name = "button2";
             this.button2.Size = new System.Drawing.Size(132, 23);
             this.button2.TabIndex = 10;
@@ -273,7 +271,7 @@
             // 
             // button3
             // 
-            this.button3.Location = new System.Drawing.Point(575, 12);
+            this.button3.Location = new System.Drawing.Point(578, 12);
             this.button3.Name = "button3";
             this.button3.Size = new System.Drawing.Size(122, 23);
             this.button3.TabIndex = 11;
@@ -305,7 +303,7 @@
             // 
             // button4
             // 
-            this.button4.Location = new System.Drawing.Point(179, 12);
+            this.button4.Location = new System.Drawing.Point(181, 12);
             this.button4.Name = "button4";
             this.button4.Size = new System.Drawing.Size(139, 23);
             this.button4.TabIndex = 12;
@@ -315,29 +313,21 @@
             // 
             // groupBox1
             // 
-            this.groupBox1.Controls.Add(this.button5);
+            this.groupBox1.Font = new System.Drawing.Font("Times New Roman", 11F, System.Drawing.FontStyle.Bold);
             this.groupBox1.Location = new System.Drawing.Point(844, 41);
             this.groupBox1.Name = "groupBox1";
-            this.groupBox1.Size = new System.Drawing.Size(335, 618);
+            this.groupBox1.Size = new System.Drawing.Size(338, 618);
             this.groupBox1.TabIndex = 13;
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "Свойства";
-            // 
-            // button5
-            // 
-            this.button5.Location = new System.Drawing.Point(97, 589);
-            this.button5.Name = "button5";
-            this.button5.Size = new System.Drawing.Size(165, 23);
-            this.button5.TabIndex = 0;
-            this.button5.Text = "Изменить (Сохранить)";
-            this.button5.UseVisualStyleBackColor = true;
+            this.groupBox1.Visible = false;
             // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.White;
-            this.ClientSize = new System.Drawing.Size(1191, 670);
+            this.ClientSize = new System.Drawing.Size(1194, 670);
             this.Controls.Add(this.groupBox1);
             this.Controls.Add(this.button4);
             this.Controls.Add(this.button3);
@@ -357,7 +347,6 @@
             ((System.ComponentModel.ISupportInitialize)(this.voltmetr)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.battery)).EndInit();
             this.contextMenuStrip1.ResumeLayout(false);
-            this.groupBox1.ResumeLayout(false);
             this.ResumeLayout(false);
 
         }
@@ -389,7 +378,6 @@
         private System.Windows.Forms.ToolStripMenuItem перевернутьToolStripMenuItem;
         private System.Windows.Forms.Button button4;
         private System.Windows.Forms.GroupBox groupBox1;
-        private System.Windows.Forms.Button button5;
     }
 }
 

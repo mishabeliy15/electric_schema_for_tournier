@@ -23,5 +23,15 @@ namespace electric_shema
     class Resistor
     {
         public double R { get; set; }
+        public string Text { get; set; }
+    }
+    class Battery
+    {
+        public double U { get; set; }
+        public string Text { get; set; }
+    }
+    class Ampermetr
+    {
+        public double I { get; set; }
     }
 }
