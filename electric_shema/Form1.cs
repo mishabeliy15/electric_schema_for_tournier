@@ -55,6 +55,7 @@ namespace electric_shema
         {
             InitializeComponent();
             CreateNewSchem();
+            timer1.Start();
         }
         private void picture_click(object sender, EventArgs e)
         {
@@ -65,6 +66,7 @@ namespace electric_shema
                         if (this.Cursor == System.Windows.Forms.Cursors.Hand)
                         {
                             kletka[i, j].Image = new Bitmap(NewElements.Image);
+                            kletka[i, j].Name = NewElements.Name;
                             schema_now.kletka[i, j].Name = NewElements.Name;
                             this.Cursor = System.Windows.Forms.Cursors.Default;
                         }
@@ -253,6 +255,7 @@ namespace electric_shema
                         if (schema_now.kletka[i, j].Name != null)
                         {
                             kletka[i, j].Image = new Bitmap(who_name(schema_now.kletka[i, j].Name).Image);
+                            kletka[i, j].Name = schema_now.kletka[i, j].Name;
                             switch (schema_now.kletka[i, j].Rotate)
                             {
                                 case 90:
@@ -347,15 +350,26 @@ namespace electric_shema
 
         private void вырезатьToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            copied = who_clicked_box(contextMenuStrip1.SourceControl as PictureBox);
-            move = true;
+            if ((contextMenuStrip1.SourceControl as PictureBox).Image == null)
+                MessageBox.Show("Нечего вырезать", "Ошибка!");
+            else
+            {
+                copied = who_clicked_box(contextMenuStrip1.SourceControl as PictureBox);
+                move = true;
+                вставитьToolStripMenuItem.Visible = true;
+            }
         }
 
         private void копироватьToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            copied = who_clicked_box(contextMenuStrip1.SourceControl as PictureBox);
-            move = false;
-            вставитьToolStripMenuItem.Visible = true;
+            if ((contextMenuStrip1.SourceControl as PictureBox).Image == null)
+                MessageBox.Show("Нечего копировать", "Ошибка!");
+            else
+            {
+                copied = who_clicked_box(contextMenuStrip1.SourceControl as PictureBox);
+                move = false;
+                вставитьToolStripMenuItem.Visible = true;
+            }
         }
 
         private void вставитьToolStripMenuItem_Click(object sender, EventArgs e)
@@ -376,6 +390,62 @@ namespace electric_shema
             }
             вставитьToolStripMenuItem.Visible = false;
             show_properties(temp.X, temp.Y);
+        }
+
+        double i = 0, u = 0, r = 0;
+        bool[,] f;
+        bool valid = false;
+        private void timer1_Tick(object sender, EventArgs e)
+        {
+            if (!schema_now.power)
+                for (int i = 0; i < 10; i++)
+                    for (int j = 0; j < 10; j++)
+                        if (schema_now.kletka[i, j].Name == battery.Name)
+                        {
+                            schema_now.power = true;
+                            schema_now.battery = new Point(i,j);
+                        }
+            if (schema_now.power)
+            {
+                i = 0; u = 0; r = 0; f = new bool[10, 10];valid = false;
+                for (int i = 0; i < 10; i++) for (int j = 0; j < 10; j++) f[i, j] = false;
+                dfs(schema_now.battery.X, schema_now.battery.Y);
+            }
+        }
+        private void dfs(int i,int j)
+        {
+            if (!valid)
+            {
+                f[i, j] = true;
+                if (schema_now.kletka[i, j].Name == battery.Name)
+                {
+                    u += schema_now.kletka[i, j].U;
+                }
+                else if (schema_now.kletka[i, j].Name == resistor.Name)
+                {
+                    r += schema_now.kletka[i, j].R;
+                };
+
+                if (schema_now.kletka[i, j].Name != Provod_povorot.Name)
+                    switch (schema_now.kletka[i, j].Rotate)
+                    {
+                        case 0:
+                            if (j + 1 < 10 && schema_now.kletka[i, j + 1].Rotate == 0)
+                                if (!f[i, j + 1]) dfs(i, j + 1);
+                                else if (new Point(i, j + 1) == schema_now.battery) { valid = true; return; }
+                            break;
+                        case 90:
+                            if (i + 1 < 10 && ((schema_now.kletka[i + 1, j].Rotate == 90) || (schema_now.kletka[i + 1, j].Rotate == 180)))
+                                if (!f[i + 1, j]) dfs(i + 1, j);
+                                else if (new Point(i + 1, j) == schema_now.battery) { valid = true; return; }
+                            break;
+                    }
+                else if(schema_now.kletka[i, j].Name == Provod_povorot.Name)
+                {
+
+                }
+            }
+            else return;
         }
     }
 }
