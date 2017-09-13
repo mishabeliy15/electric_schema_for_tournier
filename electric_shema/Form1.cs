@@ -19,6 +19,9 @@ namespace electric_shema
         Label[] PropertiesLabels;
         TextBox[] PropertiesTextBox;
         Point changeable;
+        PictureBox NewElements;
+        Point copied;
+        bool move = false;
         private PictureBox createPictureBox(int x,int y)
         {
             PictureBox pict = new PictureBox();
@@ -41,7 +44,6 @@ namespace electric_shema
             kletka = new PictureBox[10, 10];            
             schema_now = new schema_json();
             schema_now.kletka = new box[10, 10];
-
             for (int i = 0; i < 10; i++)
                 for (int j = 0; j < 10; j++)
                 {
@@ -62,65 +64,68 @@ namespace electric_shema
                     {
                         if (this.Cursor == System.Windows.Forms.Cursors.Hand)
                         {
-                            kletka[i, j].Image = new Bitmap(who_checked(i,j).Image);
-                            schema_now.kletka[i, j].Name = who_checked(i,j).Name;
-                            schema_now.kletka[i, j].Vertical = false;
+                            kletka[i, j].Image = new Bitmap(NewElements.Image);
+                            schema_now.kletka[i, j].Name = NewElements.Name;
                             this.Cursor = System.Windows.Forms.Cursors.Default;
                         }
-                        switch (schema_now.kletka[i, j].Name)
-                        {
-                            case "resistor":
-                                delete_properties();
-                                groupBox1.Visible = true;
-                                groupBox1.Text = "Свойства резистора [" + i.ToString() + ", " + j.ToString() + "]";
-                                PropertiesLabels = new Label[1];
-                                PropertiesTextBox = new TextBox[1];
-                                PropertiesLabels[0] = new Label();
-                                PropertiesLabels[0].Location = new Point(5, 20);
-                                PropertiesLabels[0].Size = new Size(180, 25);
-                                PropertiesLabels[0].Text = "Сопротивление (R, Ом):";
-                                this.groupBox1.Controls.Add(PropertiesLabels[0]);
-
-                                PropertiesTextBox[0] = new TextBox();
-                                PropertiesTextBox[0].Name = "Opir";
-                                PropertiesTextBox[0].Location = new Point(185, 20);
-                                PropertiesTextBox[0].Size = new Size(65, 25);
-                                PropertiesTextBox[0].Text = (schema_now.kletka[i, j].Properties as Resistor).R.ToString();
-                                PropertiesTextBox[0].KeyPress += textBox_KeyPress;
-                                PropertiesTextBox[0].TextChanged += textBox_TextChanged;
-                                this.groupBox1.Controls.Add(PropertiesTextBox[0]);
-
-                                changeable = new Point(i, j);
-                                break;
-                            case "battery":
-                                delete_properties();
-                                groupBox1.Visible = true;
-                                groupBox1.Text = "Свойства батареи [" + i.ToString() + ", " + j.ToString() + "]";
-                                PropertiesLabels = new Label[1];
-                                PropertiesTextBox = new TextBox[1];
-                                PropertiesLabels[0] = new Label();
-                                PropertiesLabels[0].Location = new Point(5, 20);
-                                PropertiesLabels[0].Size = new Size(180, 25);
-                                PropertiesLabels[0].Text = "Напряжения (U, Вольт):";
-                                this.groupBox1.Controls.Add(PropertiesLabels[0]);
-
-                                PropertiesTextBox[0] = new TextBox();
-                                PropertiesTextBox[0].Name = "Napruga";
-                                PropertiesTextBox[0].Location = new Point(185, 20);
-                                PropertiesTextBox[0].Size = new Size(65, 25);
-                                PropertiesTextBox[0].Text = (schema_now.kletka[i, j].Properties as Battery).U.ToString();
-                                PropertiesTextBox[0].KeyPress += textBox_KeyPress;
-                                PropertiesTextBox[0].TextChanged += textBox_TextChanged;
-                                this.groupBox1.Controls.Add(PropertiesTextBox[0]);
-
-                                changeable = new Point(i, j);
-                                break;
-                            default:
-                                delete_properties();
-                                break;
-                        }
+                        show_properties(i, j);
                         break;
                     }
+        }
+        private void show_properties(int i, int j)
+        {
+            switch (schema_now.kletka[i, j].Name)
+            {
+                case "resistor":
+                    delete_properties();
+                    groupBox1.Visible = true;
+                    groupBox1.Text = "Свойства резистора [" + i.ToString() + ", " + j.ToString() + "]";
+                    PropertiesLabels = new Label[1];
+                    PropertiesTextBox = new TextBox[1];
+                    PropertiesLabels[0] = new Label();
+                    PropertiesLabels[0].Location = new Point(5, 20);
+                    PropertiesLabels[0].Size = new Size(180, 25);
+                    PropertiesLabels[0].Text = "Сопротивление (R, Ом):";
+                    this.groupBox1.Controls.Add(PropertiesLabels[0]);
+
+                    PropertiesTextBox[0] = new TextBox();
+                    PropertiesTextBox[0].Name = "Opir";
+                    PropertiesTextBox[0].Location = new Point(185, 20);
+                    PropertiesTextBox[0].Size = new Size(65, 25);
+                    PropertiesTextBox[0].Text = schema_now.kletka[i, j].R.ToString();
+                    PropertiesTextBox[0].KeyPress += textBox_KeyPress;
+                    PropertiesTextBox[0].TextChanged += textBox_TextChanged;
+                    this.groupBox1.Controls.Add(PropertiesTextBox[0]);
+
+                    changeable = new Point(i, j);
+                    break;
+                case "battery":
+                    delete_properties();
+                    groupBox1.Visible = true;
+                    groupBox1.Text = "Свойства батареи [" + i.ToString() + ", " + j.ToString() + "]";
+                    PropertiesLabels = new Label[1];
+                    PropertiesTextBox = new TextBox[1];
+                    PropertiesLabels[0] = new Label();
+                    PropertiesLabels[0].Location = new Point(5, 20);
+                    PropertiesLabels[0].Size = new Size(180, 25);
+                    PropertiesLabels[0].Text = "Напряжения (U, Вольт):";
+                    this.groupBox1.Controls.Add(PropertiesLabels[0]);
+
+                    PropertiesTextBox[0] = new TextBox();
+                    PropertiesTextBox[0].Name = "Napruga";
+                    PropertiesTextBox[0].Location = new Point(185, 20);
+                    PropertiesTextBox[0].Size = new Size(65, 25);
+                    PropertiesTextBox[0].Text = schema_now.kletka[i, j].U.ToString();
+                    PropertiesTextBox[0].KeyPress += textBox_KeyPress;
+                    PropertiesTextBox[0].TextChanged += textBox_TextChanged;
+                    this.groupBox1.Controls.Add(PropertiesTextBox[0]);
+
+                    changeable = new Point(i, j);
+                    break;
+                default:
+                    delete_properties();
+                    break;
+            }
         }
         private void delete_properties()
         {
@@ -151,84 +156,14 @@ namespace electric_shema
                 switch (schema_now.kletka[changeable.X, changeable.Y].Name)
                 {
                     case "resistor":
-                        (schema_now.kletka[changeable.X, changeable.Y].Properties as Resistor).R = k;
+                        schema_now.kletka[changeable.X, changeable.Y].R = k;
                         break;
                     case "battery":
-                        (schema_now.kletka[changeable.X, changeable.Y].Properties as Battery).U = k;
+                        schema_now.kletka[changeable.X, changeable.Y].U = k;
                         break;
                     default:
                         break;
                 }
-            }
-        }
-        private PictureBox who_checked(int i,int j)
-        {
-            if (radioButton1.Checked)
-            {
-                schema_now.kletka[i, j].Properties = new Resistor();
-                (schema_now.kletka[i, j].Properties as Resistor).R = 1;
-                return resistor;
-            }
-            else if (radioButton2.Checked)
-            {
-                schema_now.kletka[i, j].Properties = new Battery();
-                (schema_now.kletka[i, j].Properties as Battery).U = 12;
-                return battery;
-            }
-            else if (radioButton3.Checked) return voltmetr;
-            else if (radioButton4.Checked)
-            {
-                schema_now.kletka[i, j].Properties = new Ampermetr();
-                (schema_now.kletka[i, j].Properties as Ampermetr).I = 0;
-                return ampmetr;
-            }
-            else if (radioButton5.Checked) return onof;
-            else if (radioButton6.Checked) return Lampa;
-            else if (radioButton7.Checked) return Provod;
-            else return null;
-        }
-        private void button1_Click_1(object sender, EventArgs e)
-        {
-            this.Cursor = System.Windows.Forms.Cursors.Hand;
-            delete_properties();
-        }
-
-        private void button2_Click(object sender, EventArgs e)
-        {
-            string serialized = JsonConvert.SerializeObject(schema_now);
-            saveFileDialog1.ShowDialog();
-            if (saveFileDialog1.FileName != "")
-            {
-                StreamWriter sw = new StreamWriter(saveFileDialog1.FileName);
-                sw.WriteLine(serialized);
-                sw.Close();
-            }
-        }
-
-        private void button3_Click(object sender, EventArgs e)
-        {
-            openFileDialog1.ShowDialog();
-            if (openFileDialog1.FileName != "")
-            {
-                CreateNewSchem();
-                StreamReader se = new StreamReader(openFileDialog1.FileName);
-                string s = se.ReadLine();
-                schema_now = JsonConvert.DeserializeObject<schema_json>(s);
-                for (int i = 0; i < 10; i++)
-                    for (int j = 0; j < 10; j++)
-                        if (schema_now.kletka[i, j].Name != null)
-                        {
-                            kletka[i, j].Image = who_name(schema_now.kletka[i, j].Name).Image;
-                            if (schema_now.kletka[i, j].Vertical)
-                            {
-                                kletka[i, j].Image.RotateFlip(RotateFlipType.Rotate90FlipNone);
-                                kletka[i, j].Refresh();
-                            }
-
-                        }
-                        else
-                            kletka[i, j].Image = new Bitmap(50,50);
-                se.Close();
             }
         }
         private PictureBox who_name(string name)
@@ -247,6 +182,8 @@ namespace electric_shema
                 return Lampa;
             else if (name == Provod.Name)
                 return Provod;
+            else if (name == Provod_povorot.Name)
+                return Provod_povorot;
             else
                 return null;
         }
@@ -260,57 +197,35 @@ namespace electric_shema
                 kletka[temp.X, temp.Y].Image = new Bitmap(50, 50);
                 schema_now.kletka[temp.X, temp.Y] = new box();
             }
-            else if(e.ClickedItem.Text == "Перевернуть")
+            else if(e.ClickedItem.Text == "Повернуть")
             {
                 if ((contextMenuStrip1.SourceControl as PictureBox).Image != null)
                 {
                     Point temp = who_clicked_box(contextMenuStrip1.SourceControl as PictureBox);
-                    if (!schema_now.kletka[temp.X, temp.Y].Vertical)
+                    if (schema_now.kletka[temp.X, temp.Y].Name != Provod_povorot.Name)
                     {
-                        kletka[temp.X, temp.Y].Image.RotateFlip(RotateFlipType.Rotate90FlipNone);
-                        kletka[temp.X, temp.Y].Refresh();
-                        schema_now.kletka[temp.X, temp.Y].Vertical = true;
+                        if (schema_now.kletka[temp.X, temp.Y].Rotate == 0)
+                        {
+                            kletka[temp.X, temp.Y].Image.RotateFlip(RotateFlipType.Rotate90FlipNone);
+                            kletka[temp.X, temp.Y].Refresh();
+                            schema_now.kletka[temp.X, temp.Y].Rotate = 90;
+                        }
+                        else
+                        {
+                            kletka[temp.X, temp.Y].Image.RotateFlip(RotateFlipType.Rotate270FlipNone);
+                            kletka[temp.X, temp.Y].Refresh();
+                            schema_now.kletka[temp.X, temp.Y].Rotate = 0;
+                        }
                     }
                     else
                     {
-                        kletka[temp.X, temp.Y].Image.RotateFlip(RotateFlipType.Rotate270FlipNone);
+                        kletka[temp.X, temp.Y].Image.RotateFlip(RotateFlipType.Rotate90FlipNone);
                         kletka[temp.X, temp.Y].Refresh();
-                        schema_now.kletka[temp.X, temp.Y].Vertical = false;
+                        schema_now.kletka[temp.X, temp.Y].Rotate += 90;
+                        schema_now.kletka[temp.X, temp.Y].Rotate %= 360;
                     }
                 }
             }
-            /*else if (e.ClickedItem.Text == "Копировать")
-            {
-                copy = who_clicked_box(contextMenuStrip1.SourceControl as PictureBox);
-                moveto = false;
-                copied = true;
-            }
-            else if (e.ClickedItem.Text == "Переместить")
-            {
-                copy = who_clicked_box(contextMenuStrip1.SourceControl as PictureBox);
-                moveto = true;
-            }
-            else if (e.ClickedItem.Text == "Вставить")
-            {
-                if (copied)
-                {
-                    Point temp = who_clicked_box(contextMenuStrip1.SourceControl as PictureBox);
-                    kletka[temp.X, temp.Y].Name = kletka[copy.X, copy.Y].Name;
-                    kletka[temp.X, temp.Y].Image = new Bitmap(kletka[copy.X, copy.Y].Image);
-                    kletka[temp.X, temp.Y].Refresh();
-                    schema_now.kletka[temp.X, temp.Y] = schema_now.kletka[copy.X, copy.Y];
-                }
-                else if (moveto)
-                {
-                    Point temp = who_clicked_box(contextMenuStrip1.SourceControl as PictureBox);
-                    kletka[temp.X, temp.Y] = kletka[copy.X, copy.Y];
-                    schema_now.kletka[temp.X, temp.Y] = schema_now.kletka[copy.X, copy.Y];
-                    kletka[copy.X, copy.Y] = createPictureBox(copy.Y, copy.X);
-                    moveto = false;
-                }
-                else
-                    MessageBox.Show("Нечего вставлять", "Ошибка!");
-            }*/
         }
         private Point who_clicked_box(object sender)
         {
@@ -320,10 +235,147 @@ namespace electric_shema
                         return new Point(i, j);
             return new Point(0, 0);
         }
-
-        private void button4_Click(object sender, EventArgs e)
+        private void создатьToolStripMenuItem_Click(object sender, EventArgs e)
         {
             CreateNewSchem();
+        }
+        private void открытьToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            openFileDialog1.ShowDialog();
+            if (openFileDialog1.FileName != "")
+            {
+                CreateNewSchem();
+                StreamReader se = new StreamReader(openFileDialog1.FileName);
+                string s = se.ReadLine();
+                schema_now = JsonConvert.DeserializeObject<schema_json>(s);
+                for (int i = 0; i < 10; i++)
+                    for (int j = 0; j < 10; j++)
+                        if (schema_now.kletka[i, j].Name != null)
+                        {
+                            kletka[i, j].Image = new Bitmap(who_name(schema_now.kletka[i, j].Name).Image);
+                            switch (schema_now.kletka[i, j].Rotate)
+                            {
+                                case 90:
+                                    kletka[i, j].Image.RotateFlip(RotateFlipType.Rotate90FlipNone);
+                                    kletka[i, j].Refresh();
+                                    break;
+                                case 180:
+                                    kletka[i, j].Image.RotateFlip(RotateFlipType.Rotate180FlipNone);
+                                    kletka[i, j].Refresh();
+                                    break;
+                                case 270:
+                                    kletka[i, j].Image.RotateFlip(RotateFlipType.Rotate270FlipNone);
+                                    kletka[i, j].Refresh();
+                                    break;
+                                default:
+                                    kletka[i, j].Refresh();
+                                    break;
+                            }
+
+                        }
+                        else
+                            kletka[i, j].Image = new Bitmap(50, 50);
+                se.Close();
+            }
+        }
+        private void сохранитьToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            saveFileDialog1.ShowDialog();
+            if (saveFileDialog1.FileName != "")
+            {
+                StreamWriter sw = new StreamWriter(saveFileDialog1.FileName);
+                sw.Write(JsonConvert.SerializeObject(schema_now));
+                sw.Close();
+            }
+        }
+
+        private void resistor_Click(object sender, EventArgs e)
+        {
+            this.Cursor = System.Windows.Forms.Cursors.Hand;
+            delete_properties();
+            NewElements = resistor;
+        }
+
+        private void battery_Click(object sender, EventArgs e)
+        {
+            this.Cursor = System.Windows.Forms.Cursors.Hand;
+            delete_properties();
+            NewElements = battery;
+        }
+
+        private void voltmetr_Click(object sender, EventArgs e)
+        {
+            this.Cursor = System.Windows.Forms.Cursors.Hand;
+            delete_properties();
+            NewElements = voltmetr;
+        }
+
+        private void ampmetr_Click(object sender, EventArgs e)
+        {
+            this.Cursor = System.Windows.Forms.Cursors.Hand;
+            delete_properties();
+            NewElements = ampmetr;
+        }
+
+        private void onof_Click(object sender, EventArgs e)
+        {
+            this.Cursor = System.Windows.Forms.Cursors.Hand;
+            delete_properties();
+            NewElements = onof;
+        }
+
+        private void Lampa_Click(object sender, EventArgs e)
+        {
+            this.Cursor = System.Windows.Forms.Cursors.Hand;
+            delete_properties();
+            NewElements = Lampa;
+        }
+
+        private void Provod_Click(object sender, EventArgs e)
+        {
+            this.Cursor = System.Windows.Forms.Cursors.Hand;
+            delete_properties();
+            NewElements = Provod;
+        }
+
+        private void Provod_povorot_Click(object sender, EventArgs e)
+        {
+            this.Cursor = System.Windows.Forms.Cursors.Hand;
+            delete_properties();
+            NewElements = Provod_povorot;
+        }
+
+        private void вырезатьToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            copied = who_clicked_box(contextMenuStrip1.SourceControl as PictureBox);
+            move = true;
+        }
+
+        private void копироватьToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            copied = who_clicked_box(contextMenuStrip1.SourceControl as PictureBox);
+            move = false;
+            вставитьToolStripMenuItem.Visible = true;
+        }
+
+        private void вставитьToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            Point temp = who_clicked_box(contextMenuStrip1.SourceControl as PictureBox);
+            kletka[temp.X, temp.Y].Name = kletka[copied.X, copied.Y].Name;
+            kletka[temp.X, temp.Y].Image = new Bitmap(kletka[copied.X, copied.Y].Image);
+            schema_now.kletka[temp.X, temp.Y].Name = schema_now.kletka[copied.X, copied.Y].Name;
+            schema_now.kletka[temp.X, temp.Y].R = schema_now.kletka[copied.X, copied.Y].R;
+            schema_now.kletka[temp.X, temp.Y].Rotate = schema_now.kletka[copied.X, copied.Y].Rotate;
+            schema_now.kletka[temp.X, temp.Y].U = schema_now.kletka[copied.X, copied.Y].U;
+            if (move)
+            {
+                kletka[copied.X, copied.Y].Name = null;
+                kletka[copied.X, copied.Y].Image = new Bitmap(50,50);
+                schema_now.kletka[copied.X, copied.Y] = new box();
+                move = false;
+            }
+            вставитьToolStripMenuItem.Visible = false;
+            show_properties(temp.X, temp.Y);
         }
     }
 }

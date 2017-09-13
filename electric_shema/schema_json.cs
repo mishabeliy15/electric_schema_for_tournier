@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -12,26 +13,14 @@ namespace electric_shema
     }
     class box
     {
-        public string Name { get; set; }
-        public bool Vertical { get; set; }
-        public object Properties { get; set; }
         public box()
         {
-            Vertical = false;
+            Rotate = 0;
         }
-    }
-    class Resistor
-    {
+        public string Name { get; set; }
+        public int Rotate { get; set; }
         public double R { get; set; }
-        public string Text { get; set; }
-    }
-    class Battery
-    {
         public double U { get; set; }
-        public string Text { get; set; }
-    }
-    class Ampermetr
-    {
         public double I { get; set; }
     }
 }
