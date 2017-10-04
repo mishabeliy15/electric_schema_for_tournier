@@ -18,6 +18,7 @@ namespace electric_shema
         schema_json schema_now;
         Label[] PropertiesLabels;
         TextBox[] PropertiesTextBox;
+        CheckBox[] PropertiesCheckBox;
         Point changeable;
         PictureBox NewElements;
         Point copied;
@@ -34,7 +35,7 @@ namespace electric_shema
             this.Schema.Controls.Add(pict);
             return pict;
         }
-        private void CreateNewSchem()
+        protected void CreateNewSchem(bool laba)
         {
             if (kletka != null)
                 for (int i = 0; i < 10; i++)
@@ -51,11 +52,19 @@ namespace electric_shema
                     schema_now.kletka[i, j] = new box();
                 }
             delete_properties();
+            schema_now.Task.Laba = laba;
+            groupBox2.Visible = laba;
+            i = 0; u = 0; r = 0;valid = false;
+            richTextBox1.Text = "";
+            textBox3.Text = "";
+            textBox4.Text = "";
+            textBox5.Text = "";
+            Elemets.Enabled = true;
         }
         public Form1()
         {
             InitializeComponent();
-            CreateNewSchem();
+            CreateNewSchem(false);
             timer1.Start();
         }
         private void picture_click(object sender, EventArgs e)
@@ -125,24 +134,45 @@ namespace electric_shema
 
                     changeable = new Point(i, j);
                     break;
+                case "onof":
+                    delete_properties();
+                    groupBox1.Visible = true;
+                    groupBox1.Text = "Свойства рычага [" + i.ToString() + ", " + j.ToString() + "]";
+                    PropertiesCheckBox = new CheckBox[1];
+                    PropertiesCheckBox[0] = new CheckBox();
+                    PropertiesCheckBox[0].Location = new Point(5, 20);
+                    PropertiesCheckBox[0].Size = new Size(180, 25);
+                    PropertiesCheckBox[0].Text = "Включить";
+                    PropertiesCheckBox[0].CheckedChanged += checked_onofChaned;
+                    PropertiesCheckBox[0].Checked = schema_now.kletka[i, j].on_of;
+                    this.groupBox1.Controls.Add(PropertiesCheckBox[0]);
+
+                    changeable = new Point(i, j);
+                    break;
                 default:
                     delete_properties();
                     break;
             }
         }
+        private void checked_onofChaned(object sender, EventArgs e)
+        {
+            schema_now.kletka[changeable.X, changeable.Y].on_of = (sender as CheckBox).Checked;
+        }
         private void delete_properties()
         {
             if (PropertiesLabels != null && PropertiesTextBox != null)
-            {
                 for (int i = 0; i < PropertiesLabels.Length; i++)
                 {
                     PropertiesLabels[i].Dispose();
                     PropertiesTextBox[i].Dispose();
                 }
-                PropertiesLabels = null;
-                PropertiesTextBox = null;
-                groupBox1.Visible = false;
-            }
+            if (PropertiesCheckBox != null)
+                for (int i = 0; i < PropertiesCheckBox.Length; i++)
+                    PropertiesCheckBox[i].Dispose();
+            PropertiesLabels = null;
+            PropertiesTextBox = null;
+            PropertiesCheckBox = null;
+            groupBox1.Visible = false;
         }
         private void textBox_KeyPress(object sender, KeyPressEventArgs e)
         {
@@ -198,6 +228,7 @@ namespace electric_shema
                 Point temp = who_clicked_box(contextMenuStrip1.SourceControl as PictureBox);
                 kletka[temp.X, temp.Y].Name = null;
                 kletka[temp.X, temp.Y].Image = new Bitmap(50, 50);
+                schema_now.kletka[temp.X, temp.Y] = null;
                 schema_now.kletka[temp.X, temp.Y] = new box();
             }
             else if (e.ClickedItem.Text == "Повернуть")
@@ -240,17 +271,18 @@ namespace electric_shema
         }
         private void создатьToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            CreateNewSchem();
+            CreateNewSchem(false);
         }
         private void открытьToolStripMenuItem_Click(object sender, EventArgs e)
         {
             openFileDialog1.ShowDialog();
             if (openFileDialog1.FileName != "")
             {
-                CreateNewSchem();
                 StreamReader se = new StreamReader(openFileDialog1.FileName);
                 string s = se.ReadLine();
-                schema_now = JsonConvert.DeserializeObject<schema_json>(s);
+                schema_json schema_now_convert = JsonConvert.DeserializeObject<schema_json>(s);
+                CreateNewSchem(schema_now_convert.Task.Laba);
+                schema_now = schema_now_convert;
                 for (int i = 0; i < 10; i++)
                     for (int j = 0; j < 10; j++)
                         if (schema_now.kletka[i, j].Name != null)
@@ -279,6 +311,17 @@ namespace electric_shema
                         }
                         else
                             kletka[i, j].Image = new Bitmap(50, 50);
+                if (schema_now.Task.Laba)
+                {
+                    richTextBox1.Text = schema_now.Task.Text;
+                    textBox3.Text = schema_now.Task.I.ToString();
+                    textBox4.Text = schema_now.Task.U.ToString();
+                    textBox5.Text = schema_now.Task.R.ToString();
+                    checkBox1.Checked = false;
+                    checkBox2.Checked = schema_now.Task.add_elements;
+                    Elemets.Enabled = schema_now.Task.add_elements;
+                    MessageBox.Show(schema_now.Task.Text,"Задача!");
+                }
                 se.Close();
             }
             delete_properties();
@@ -380,14 +423,16 @@ namespace electric_shema
             kletka[temp.X, temp.Y].Name = kletka[copied.X, copied.Y].Name;
             kletka[temp.X, temp.Y].Image = new Bitmap(kletka[copied.X, copied.Y].Image);
             schema_now.kletka[temp.X, temp.Y].Name = schema_now.kletka[copied.X, copied.Y].Name;
-            schema_now.kletka[temp.X, temp.Y].R = schema_now.kletka[copied.X, copied.Y].R;
             schema_now.kletka[temp.X, temp.Y].Rotate = schema_now.kletka[copied.X, copied.Y].Rotate;
+            schema_now.kletka[temp.X, temp.Y].R = schema_now.kletka[copied.X, copied.Y].R;
             schema_now.kletka[temp.X, temp.Y].U = schema_now.kletka[copied.X, copied.Y].U;
+            schema_now.kletka[temp.X, temp.Y].I = schema_now.kletka[copied.X, copied.Y].I;
             if (move)
             {
                 kletka[copied.X, copied.Y].Name = null;
                 kletka[copied.X, copied.Y].Image = new Bitmap(50, 50);
-                schema_now.kletka[copied.X, copied.Y] = new box();
+                if (schema_now.battery == copied) schema_now.battery = temp;
+                 schema_now.kletka[copied.X, copied.Y] = new box();
                 move = false;
             }
             вставитьToolStripMenuItem.Visible = false;
@@ -397,6 +442,7 @@ namespace electric_shema
         double i = 0, u = 0, r = 0;
         bool[,] f;
         bool valid = false;
+        bool solved = false;
         private void timer1_Tick(object sender, EventArgs e)
         {
             if (!schema_now.power)
@@ -415,11 +461,26 @@ namespace electric_shema
             }
             if (valid)
             {
-                 textBox1.Text = "I = " + (r > 0 ?(i = u / r).ToString():"Деление на 0!") + "; U = " + u.ToString() + "; R = " + r.ToString(); 
+                textBox1.Text = "I = " + (r > 0 ?(i = u / r).ToString():u.ToString()) + "; U = " + u.ToString() + "; R = " + r.ToString(); 
+                if(schema_now.Task.Laba)
+                {
+                    int temp = 0;
+                    if (schema_now.Task.I == i) temp += 1;
+                    if (schema_now.Task.U == u) temp += 1;
+                    if (schema_now.Task.R == r) temp += 1;
+                    progressBar1.Value = temp;
+                    if (temp == 3)
+                    {
+                        if (!solved && !checkBox1.Checked) { solved = true; MessageBox.Show("Поздравляем!", "Вы решили задачу!"); }
+                    }
+                    else solved = false;
+                }
             }
             else
             {
                 textBox1.Text = "Цепь не замкнута!";
+                solved = false;
+                if (schema_now.Task.Laba) progressBar1.Value = 0;
             }
         }
         private bool isflip(int i,int j){ return schema_now.kletka[i, j].Name == Provod_povorot.Name; }
@@ -444,96 +505,128 @@ namespace electric_shema
                     switch (schema_now.kletka[i, j].Rotate)
                     {
                         case 0:
-                            if (j + 1 < 10)
-                            {
-                                if (turn(i, j + 1, 0) || (isflip(i, j + 1) && turn(i, j + 1, 90)))
-                                    if (!f[i, j + 1]) dfs(i, j + 1, k + 1);
-                                    else if (new Point(i, j + 1) == schema_now.battery && k > 1) { valid = true; return; }
-                            }
-                            if (j - 1 > 0)
-                            {
-                                if ((!isflip(i, j - 1) && turn(i, j - 1, 0)) || (isflip(i, j - 1) && (turn(i, j - 1, 180) || turn(i, j - 1, 270))))
-                                    if (!f[i, j - 1]) dfs(i, j - 1, k + 1);
-                                    else if (new Point(i, j - 1) == schema_now.battery && k > 1) { valid = true; return; }
-                            }
+                            right_dfs(i, j, k);
+                            left_dfs(i, j, k);
                             break;
                         case 90:
-                            if (i + 1 < 10)
-                            {
-                                if (turn(i + 1, j, 90) || turn(i + 1, j, 180))
-                                    if (!f[i + 1, j]) dfs(i + 1, j, k + 1);
-                                    else if (new Point(i + 1, j) == schema_now.battery && k > 1) { valid = true; return; }
-                            }
-                            if (i - 1 > 0)
-                            {
-                                if ( (!isflip(i-1,j) && turn(i - 1, j, 90)) || (isflip(i-1,j)&&(turn(i-1,j,0)||turn(i-1,j,270))))
-                                    if (!f[i - 1, j]) dfs(i - 1, j, k + 1);
-                                    else if (new Point(i - 1, j) == schema_now.battery && k > 1) { valid = true; return; }
-                            }
+                            down_dfs(i, j, k);
+                            up_dfs(i, j, k);
                             break;
                     }
                 else if(schema_now.kletka[i, j].Name == Provod_povorot.Name)//для поворотливых проводов
                     switch (schema_now.kletka[i, j].Rotate)
                     {
                         case 0:
-                            if (i + 1 < 10)
-                            {
-                                if (turn(i + 1, j, 90) || turn(i + 1, j, 180))
-                                    if (!f[i + 1, j]) dfs(i + 1, j, k + 1);
-                                    else if (new Point(i + 1, j) == schema_now.battery && k > 1) { valid = true; return; }
-                            }
-                            if (j - 1 > 0)
-                            {
-                                if ((!isflip(i, j - 1) && turn(i, j - 1, 0)) || (isflip(i, j - 1) && (turn(i, j - 1, 180) || turn(i, j - 1, 270))))
-                                    if (!f[i, j - 1]) dfs(i, j - 1, k + 1);
-                                    else if (new Point(i, j - 1) == schema_now.battery && k > 1) { valid = true; return; }
-                            }
+                            down_dfs(i, j, k);
+                            left_dfs(i, j, k);
                             break;
                         case 90:
-                            if (i - 1 > 0)
-                            {
-                                if ((!isflip(i - 1, j) && turn(i - 1, j, 90)) || (isflip(i - 1, j) && (turn(i - 1, j, 0) || turn(i - 1, j, 270))))
-                                    if (!f[i - 1, j]) dfs(i - 1, j, k + 1);
-                                    else if (new Point(i - 1, j) == schema_now.battery && k > 1) { valid = true; return; }
-                            }
-                            if (j - 1 > 0)
-                            {
-                                if ((!isflip(i, j - 1) && turn(i, j - 1, 0)) || (isflip(i, j - 1) && (turn(i, j - 1, 180) || turn(i, j - 1, 270))))
-                                    if (!f[i, j - 1]) dfs(i, j - 1, k + 1);
-                                    else if (new Point(i, j - 1) == schema_now.battery && k > 1) { valid = true; return; }
-                            }
+                            up_dfs(i, j, k);
+                            left_dfs(i, j, k);
                             break;
                         case 180:
-                            if (i - 1 > 0)
-                            {
-                                if ((!isflip(i - 1, j) && turn(i - 1, j, 90)) || (isflip(i - 1, j) && (turn(i - 1, j, 0) || turn(i - 1, j, 270))))
-                                    if (!f[i - 1, j]) dfs(i - 1, j, k + 1);
-                                    else if (new Point(i - 1, j) == schema_now.battery && k > 1) { valid = true; return; }
-                            }
-                            if (j + 1 < 10)
-                            {
-                                if (turn(i, j + 1, 0) || (isflip(i, j + 1) && turn(i, j + 1, 90)))
-                                    if (!f[i, j + 1]) dfs(i, j + 1, k + 1);
-                                    else if (new Point(i, j + 1) == schema_now.battery && k > 1) { valid = true; return; }
-                            }
+                            up_dfs(i, j, k);
+                            right_dfs(i, j, k);
                             break;
                         case 270:
-                            if (i + 1 < 10)
-                            {
-                                if (turn(i + 1, j, 90) || turn(i + 1, j, 180))
-                                    if (!f[i + 1, j]) dfs(i + 1, j, k + 1);
-                                    else if (new Point(i + 1, j) == schema_now.battery && k > 1) { valid = true; return; }
-                            }
-                            if (j + 1 < 10)
-                            {
-                                if (turn(i, j + 1, 0) || (isflip(i, j + 1) && turn(i, j + 1, 90)))
-                                    if (!f[i, j + 1]) dfs(i, j + 1, k + 1);
-                                    else if (new Point(i, j + 1) == schema_now.battery && k > 1) { valid = true; return; }
-                            }
+                            down_dfs(i, j, k);
+                            right_dfs(i, j, k);
                             break;
                     }
             }
             else return;
+        }
+
+        private void up_dfs(int i, int j, int k)
+        {
+            if (i - 1 > 0 && schema_now.kletka[i - 1, j].Name != "")
+                if (!f[i - 1, j] || (new Point(i - 1, j) == schema_now.battery && k > 1))
+                    if (schema_now.kletka[i - 1, j].Name != onof.Name || (schema_now.kletka[i - 1, j].on_of))
+                    {
+                        if ((!isflip(i - 1, j) && turn(i - 1, j, 90)) || (isflip(i - 1, j) && (turn(i - 1, j, 0) || turn(i - 1, j, 270))))
+                            if (!f[i - 1, j]) dfs(i - 1, j, k + 1);
+                            else if (new Point(i - 1, j) == schema_now.battery && k > 1) { valid = true; return; }
+                    }
+        }
+        private void down_dfs(int i,int j,int k)
+        {
+            if (i + 1 < 10 && schema_now.kletka[i + 1, j].Name != "")
+                if (!f[i + 1, j] || (new Point(i + 1, j) == schema_now.battery && k > 1))
+                    if (schema_now.kletka[i + 1, j].Name != onof.Name || (schema_now.kletka[i + 1, j].on_of))
+                    {
+                        if (turn(i + 1, j, 90) || turn(i + 1, j, 180))
+                            if (!f[i + 1, j]) dfs(i + 1, j, k + 1);
+                            else if (new Point(i + 1, j) == schema_now.battery && k > 1) { valid = true; return; }
+                    }
+        }
+        private void right_dfs(int i, int j, int k)
+        {
+            if (j + 1 < 10 && schema_now.kletka[i, j + 1].Name != "")
+                if (!f[i, j + 1] || (new Point(i, j + 1) == schema_now.battery && k > 1))
+                    if (schema_now.kletka[i, j + 1].Name != onof.Name || (schema_now.kletka[i, j + 1].on_of))
+                    {
+                        if (turn(i, j + 1, 0) || (isflip(i, j + 1) && turn(i, j + 1, 90)))
+                            if (!f[i, j + 1]) dfs(i, j + 1, k + 1);
+                            else if (new Point(i, j + 1) == schema_now.battery && k > 1) { valid = true; return; }
+                    }
+        }
+        private void left_dfs(int i, int j, int k)
+        {
+            if (!f[i, j - 1] || (new Point(i, j - 1) == schema_now.battery && k > 1))
+                if (j - 1 > 0 && schema_now.kletka[i, j - 1].Name != "")
+                    if (!f[i, j - 1] || (new Point(i, j - 1) == schema_now.battery && k > 1))
+                        if (schema_now.kletka[i, j - 1].Name != onof.Name || (schema_now.kletka[i, j - 1].on_of))
+                        {
+                            if ((!isflip(i, j - 1) && turn(i, j - 1, 0)) || (isflip(i, j - 1) && (turn(i, j - 1, 180) || turn(i, j - 1, 270))))
+                                if (!f[i, j - 1]) dfs(i, j - 1, k + 1);
+                                else if (new Point(i, j - 1) == schema_now.battery && k > 1) { valid = true; return; }
+                        }
+        }
+        private void создатьЛабароторнуюToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            CreateNewSchem(true);
+            checkBox1.Checked = true;
+        }
+
+        private void textBox3_TextChanged(object sender, EventArgs e)
+        {
+            double k;
+            double.TryParse(textBox3.Text, out k);
+            schema_now.Task.I = k;
+        }
+
+        private void textBox4_TextChanged(object sender, EventArgs e)
+        {
+            double k;
+            double.TryParse(textBox4.Text, out k);
+            schema_now.Task.U = k;
+        }
+
+        private void textBox5_TextChanged(object sender, EventArgs e)
+        {
+            double k;
+            double.TryParse(textBox5.Text, out k);
+            schema_now.Task.R = k;
+        }
+
+        private void richTextBox1_TextChanged(object sender, EventArgs e)
+        {
+            schema_now.Task.Text = richTextBox1.Text;
+        }
+
+        private void checkBox1_CheckedChanged(object sender, EventArgs e)
+        {
+            richTextBox1.Enabled = checkBox1.Checked;
+            textBox3.Enabled = checkBox1.Checked;
+            textBox4.Enabled = checkBox1.Checked;
+            textBox5.Enabled = checkBox1.Checked;
+            checkBox2.Enabled = checkBox1.Checked;
+        }
+
+        private void checkBox2_CheckedChanged(object sender, EventArgs e)
+        {
+            Elemets.Enabled = checkBox2.Checked;
+            schema_now.Task.add_elements = checkBox2.Checked;
         }
     }
 }
