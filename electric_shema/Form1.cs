@@ -169,6 +169,89 @@ namespace electric_shema
                     changeable = new Point(i, j);
                     logging("Отображенны " + groupBox1.Text.ToLower());
                     break;
+                case "Lampa":
+                    delete_properties();
+                    groupBox1.Visible = true;
+                    groupBox1.Text = "Свойства лампы [" + i.ToString() + ", " + j.ToString() + "]";
+                    PropertiesLabels = new Label[1];
+                    PropertiesLabels[0] = new Label();
+                    PropertiesLabels[0].Location = new Point(5, 20);
+                    PropertiesLabels[0].Size = new Size(180, 25);
+                    PropertiesLabels[0].Text = "Мощность (P, Ватт):";
+                    this.groupBox1.Controls.Add(PropertiesLabels[0]);
+
+                    PropertiesNumBox = new NumericUpDown[1];
+                    PropertiesNumBox[0] = new NumericUpDown();
+                    PropertiesNumBox[0].Name = "vatti";
+                    PropertiesNumBox[0].Location = new Point(185, 20);
+                    PropertiesNumBox[0].Size = new Size(65, 25);
+                    PropertiesNumBox[0].DecimalPlaces = 2;
+                    PropertiesNumBox[0].Maximum = 10000;
+                    PropertiesNumBox[0].Value = (decimal)schema_now.kletka[i, j].P;
+                    PropertiesNumBox[0].Minimum = (decimal)0.01;
+                    schema_now.kletka[i, j].U = (double)PropertiesNumBox[0].Value;
+                    PropertiesNumBox[0].ValueChanged += numeric_ValueChanged;
+                    this.groupBox1.Controls.Add(PropertiesNumBox[0]);
+
+                    changeable = new Point(i, j);
+                    logging("Отображенны " + groupBox1.Text.ToLower());
+                    break;
+                case "voltmetr":
+                    delete_properties();
+                    groupBox1.Visible = true;
+                    groupBox1.Text = "Показатели вольтметра [" + i.ToString() + ", " + j.ToString() + "]";
+                    PropertiesLabels = new Label[1];
+                    PropertiesLabels[0] = new Label();
+                    PropertiesLabels[0].Location = new Point(5, 20);
+                    PropertiesLabels[0].Size = new Size(180, 25);
+                    PropertiesLabels[0].Text = "Напряжения (U, Вольт):";
+                    this.groupBox1.Controls.Add(PropertiesLabels[0]);
+
+                    PropertiesNumBox = new NumericUpDown[1];
+                    PropertiesNumBox[0] = new NumericUpDown();
+                    PropertiesNumBox[0].Name = "Napruga";
+                    PropertiesNumBox[0].Location = new Point(185, 20);
+                    PropertiesNumBox[0].Size = new Size(65, 25);
+                    PropertiesNumBox[0].DecimalPlaces = 2;
+                    PropertiesNumBox[0].Maximum = 10000;
+                    PropertiesNumBox[0].Value = (decimal)schema_now.kletka[i, j].U;
+                    PropertiesNumBox[0].Minimum = (decimal)0.00;
+                    PropertiesNumBox[0].Enabled = false;
+                    schema_now.kletka[i, j].U = (double)PropertiesNumBox[0].Value;
+                    //PropertiesNumBox[0].ValueChanged += numeric_ValueChanged;
+                    this.groupBox1.Controls.Add(PropertiesNumBox[0]);
+
+                    changeable = new Point(i, j);
+                    logging("Отображенны " + groupBox1.Text.ToLower());
+                    break;
+                case "ampmetr":
+                    delete_properties();
+                    groupBox1.Visible = true;
+                    groupBox1.Text = "Показатели амперметра [" + i.ToString() + ", " + j.ToString() + "]";
+                    PropertiesLabels = new Label[1];
+                    PropertiesLabels[0] = new Label();
+                    PropertiesLabels[0].Location = new Point(5, 20);
+                    PropertiesLabels[0].Size = new Size(180, 25);
+                    PropertiesLabels[0].Text = "Сила тока (I, А):";
+                    this.groupBox1.Controls.Add(PropertiesLabels[0]);
+
+                    PropertiesNumBox = new NumericUpDown[1];
+                    PropertiesNumBox[0] = new NumericUpDown();
+                    PropertiesNumBox[0].Name = "Tok";
+                    PropertiesNumBox[0].Location = new Point(185, 20);
+                    PropertiesNumBox[0].Size = new Size(65, 25);
+                    PropertiesNumBox[0].DecimalPlaces = 2;
+                    PropertiesNumBox[0].Maximum = 10000;
+                    PropertiesNumBox[0].Value = (decimal)schema_now.kletka[i, j].I;
+                    PropertiesNumBox[0].Minimum = (decimal)0.00;
+                    PropertiesNumBox[0].Enabled = false;
+                    schema_now.kletka[i, j].I = (double)PropertiesNumBox[0].Value;
+                    //PropertiesNumBox[0].ValueChanged += numeric_ValueChanged;
+                    this.groupBox1.Controls.Add(PropertiesNumBox[0]);
+
+                    changeable = new Point(i, j);
+                    logging("Отображенны " + groupBox1.Text.ToLower());
+                    break;
                 default:
                     delete_properties();
                     break;
@@ -217,6 +300,11 @@ namespace electric_shema
                     logging("Изменены " + groupBox1.Text.ToLower() + " | "
                         + schema_now.kletka[changeable.X, changeable.Y].U.ToString() + " -> " + k.ToString());
                     schema_now.kletka[changeable.X, changeable.Y].U = k;
+                    break;
+                case "Lampa":
+                    logging("Изменены " + groupBox1.Text.ToLower() + " | "
+                        + schema_now.kletka[changeable.X, changeable.Y].P.ToString() + " -> " + k.ToString());
+                    schema_now.kletka[changeable.X, changeable.Y].P = k;
                     break;
                 default:
                     break;
@@ -456,6 +544,7 @@ namespace electric_shema
             schema_now.kletka[temp.X, temp.Y].R = schema_now.kletka[copied.X, copied.Y].R;
             schema_now.kletka[temp.X, temp.Y].U = schema_now.kletka[copied.X, copied.Y].U;
             schema_now.kletka[temp.X, temp.Y].I = schema_now.kletka[copied.X, copied.Y].I;
+            schema_now.kletka[temp.X, temp.Y].P = schema_now.kletka[copied.X, copied.Y].P;
             if (move)
             {
                 kletka[copied.X, copied.Y].Name = null;
@@ -533,8 +622,20 @@ namespace electric_shema
                 else if (schema_now.kletka[i, j].Name == resistor.Name)
                 {
                     r += schema_now.kletka[i, j].R;
+                }
+                else if (schema_now.kletka[i, j].Name == Lampa.Name)
+                {
+                    //P=U^2/R -> R = U^2/P
+                    r += (u * u) / schema_now.kletka[i, j].P;
+                }
+                else if (schema_now.kletka[i, j].Name == voltmetr.Name)
+                {
+                    schema_now.kletka[i, j].U = u;
+                }
+                else if (schema_now.kletka[i, j].Name == ampmetr.Name)
+                {
+                    schema_now.kletka[i, j].I = u / (r > 0 ? r : 1);
                 };
-
                 if (!isflip(i,j))
                     switch (schema_now.kletka[i, j].Rotate)
                     {

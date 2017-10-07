@@ -46,6 +46,7 @@ namespace electric_shema
         public double R { get; set; }
         public double U { get; set; }
         public double I { get; set; }
+        public double P { get; set; }
         public bool on_of { get; set; }
     }
 }
