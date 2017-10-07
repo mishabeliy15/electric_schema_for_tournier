@@ -17,12 +17,13 @@ namespace electric_shema
         PictureBox[,] kletka;
         schema_json schema_now;
         Label[] PropertiesLabels;
-        TextBox[] PropertiesTextBox;
+        NumericUpDown[] PropertiesNumBox;
         CheckBox[] PropertiesCheckBox;
         Point changeable;
         PictureBox NewElements;
         Point copied;
         bool move = false;
+        StreamWriter logger;
         private PictureBox createPictureBox(int x, int y)
         {
             PictureBox pict = new PictureBox();
@@ -56,14 +57,21 @@ namespace electric_shema
             groupBox2.Visible = laba;
             i = 0; u = 0; r = 0;valid = false;
             richTextBox1.Text = "";
-            textBox3.Text = "";
-            textBox4.Text = "";
-            textBox5.Text = "";
+            numericUpDown1.Value = (decimal)0.01;
+            numericUpDown2.Value = (decimal)0.01;
+            numericUpDown3.Value = (decimal)0.01;
             Elemets.Enabled = true;
+            logging("Создана " + (laba ? "схема" : "лаборотоная"));
+        }
+        private void logging(string s)
+        {
+            logger.WriteLine("["+ DateTime.Now.ToLocalTime().ToString()+"] "+s);
         }
         public Form1()
         {
             InitializeComponent();
+            logger = new StreamWriter(DateTime.Now.ToLocalTime().ToString().Replace(":",";") + ".log");
+            logging("Инициализированны компоненты");
             CreateNewSchem(false);
             timer1.Start();
         }
@@ -79,6 +87,7 @@ namespace electric_shema
                             kletka[i, j].Name = NewElements.Name;
                             schema_now.kletka[i, j].Name = NewElements.Name;
                             this.Cursor = System.Windows.Forms.Cursors.Default;
+                            logging("Добавлен(а) " + beatifullName(NewElements.Name));
                         }
                         show_properties(i, j);
                         break;
@@ -93,46 +102,56 @@ namespace electric_shema
                     groupBox1.Visible = true;
                     groupBox1.Text = "Свойства резистора [" + i.ToString() + ", " + j.ToString() + "]";
                     PropertiesLabels = new Label[1];
-                    PropertiesTextBox = new TextBox[1];
                     PropertiesLabels[0] = new Label();
                     PropertiesLabels[0].Location = new Point(5, 20);
                     PropertiesLabels[0].Size = new Size(180, 25);
                     PropertiesLabels[0].Text = "Сопротивление (R, Ом):";
                     this.groupBox1.Controls.Add(PropertiesLabels[0]);
 
-                    PropertiesTextBox[0] = new TextBox();
-                    PropertiesTextBox[0].Name = "Opir";
-                    PropertiesTextBox[0].Location = new Point(185, 20);
-                    PropertiesTextBox[0].Size = new Size(65, 25);
-                    PropertiesTextBox[0].Text = schema_now.kletka[i, j].R.ToString();
-                    PropertiesTextBox[0].KeyPress += textBox_KeyPress;
-                    PropertiesTextBox[0].TextChanged += textBox_TextChanged;
-                    this.groupBox1.Controls.Add(PropertiesTextBox[0]);
+                    PropertiesNumBox = new NumericUpDown[1];
+                    PropertiesNumBox[0] = new NumericUpDown();
+                    PropertiesNumBox[0].Name = "Opir";
+                    PropertiesNumBox[0].Location = new Point(185, 20);
+                    PropertiesNumBox[0].Size = new Size(65, 25);
+                    PropertiesNumBox[0].DecimalPlaces = 2;
+                    PropertiesNumBox[0].Maximum = 10000;
+                    PropertiesNumBox[0].Value = (decimal)schema_now.kletka[i, j].R;
+                    PropertiesNumBox[0].Minimum = (decimal)0.01;
+                    PropertiesNumBox[0].Maximum = 10000;
+                    schema_now.kletka[i, j].R = (double)PropertiesNumBox[0].Value;
+                    PropertiesNumBox[0].ValueChanged += numeric_ValueChanged;
+                    this.groupBox1.Controls.Add(PropertiesNumBox[0]);
 
                     changeable = new Point(i, j);
+
+                    logging("Отображенны " + groupBox1.Text.ToLower());
                     break;
                 case "battery":
                     delete_properties();
                     groupBox1.Visible = true;
                     groupBox1.Text = "Свойства батареи [" + i.ToString() + ", " + j.ToString() + "]";
                     PropertiesLabels = new Label[1];
-                    PropertiesTextBox = new TextBox[1];
                     PropertiesLabels[0] = new Label();
                     PropertiesLabels[0].Location = new Point(5, 20);
                     PropertiesLabels[0].Size = new Size(180, 25);
                     PropertiesLabels[0].Text = "Напряжения (U, Вольт):";
                     this.groupBox1.Controls.Add(PropertiesLabels[0]);
 
-                    PropertiesTextBox[0] = new TextBox();
-                    PropertiesTextBox[0].Name = "Napruga";
-                    PropertiesTextBox[0].Location = new Point(185, 20);
-                    PropertiesTextBox[0].Size = new Size(65, 25);
-                    PropertiesTextBox[0].Text = schema_now.kletka[i, j].U.ToString();
-                    PropertiesTextBox[0].KeyPress += textBox_KeyPress;
-                    PropertiesTextBox[0].TextChanged += textBox_TextChanged;
-                    this.groupBox1.Controls.Add(PropertiesTextBox[0]);
+                    PropertiesNumBox = new NumericUpDown[1];
+                    PropertiesNumBox[0] = new NumericUpDown();
+                    PropertiesNumBox[0].Name = "Napruga";
+                    PropertiesNumBox[0].Location = new Point(185, 20);
+                    PropertiesNumBox[0].Size = new Size(65, 25);
+                    PropertiesNumBox[0].DecimalPlaces = 2;
+                    PropertiesNumBox[0].Maximum = 10000;
+                    PropertiesNumBox[0].Value = (decimal)schema_now.kletka[i, j].U;
+                    PropertiesNumBox[0].Minimum = (decimal)0.01;
+                    schema_now.kletka[i, j].U = (double)PropertiesNumBox[0].Value;
+                    PropertiesNumBox[0].ValueChanged += numeric_ValueChanged;
+                    this.groupBox1.Controls.Add(PropertiesNumBox[0]);
 
                     changeable = new Point(i, j);
+                    logging("Отображенны " + groupBox1.Text.ToLower());
                     break;
                 case "onof":
                     delete_properties();
@@ -148,6 +167,7 @@ namespace electric_shema
                     this.groupBox1.Controls.Add(PropertiesCheckBox[0]);
 
                     changeable = new Point(i, j);
+                    logging("Отображенны " + groupBox1.Text.ToLower());
                     break;
                 default:
                     delete_properties();
@@ -156,47 +176,50 @@ namespace electric_shema
         }
         private void checked_onofChaned(object sender, EventArgs e)
         {
+            logging("Рычаг | "+ schema_now.kletka[changeable.X, changeable.Y].on_of+" -> "+ (sender as CheckBox).Checked);
             schema_now.kletka[changeable.X, changeable.Y].on_of = (sender as CheckBox).Checked;
         }
         private void delete_properties()
         {
-            if (PropertiesLabels != null && PropertiesTextBox != null)
+            if (PropertiesLabels != null && PropertiesNumBox != null)
                 for (int i = 0; i < PropertiesLabels.Length; i++)
                 {
                     PropertiesLabels[i].Dispose();
-                    PropertiesTextBox[i].Dispose();
+                    PropertiesNumBox[i].Dispose();
                 }
             if (PropertiesCheckBox != null)
                 for (int i = 0; i < PropertiesCheckBox.Length; i++)
                     PropertiesCheckBox[i].Dispose();
             PropertiesLabels = null;
-            PropertiesTextBox = null;
+            PropertiesNumBox = null;
             PropertiesCheckBox = null;
             groupBox1.Visible = false;
+            logging("Скрыты " + groupBox1.Text.ToLower());
         }
-        private void textBox_KeyPress(object sender, KeyPressEventArgs e)
+        /*private void textBox_KeyPress(object sender, KeyPressEventArgs e)
         {
             if (!Char.IsDigit(e.KeyChar) && e.KeyChar != (char)Keys.Back && e.KeyChar != ',')
                 e.Handled = true;
             else if (e.KeyChar == ',' && (sender as TextBox).Text.Contains("."))
                 e.Handled = true;
-        }
-        private void textBox_TextChanged(object sender, EventArgs e)
+        }*/
+        private void numeric_ValueChanged(object sender, EventArgs e)
         {
-            double k;
-            if (double.TryParse((sender as TextBox).Text, out k))
+            double k = (double)(sender as NumericUpDown).Value;
+            switch (schema_now.kletka[changeable.X, changeable.Y].Name)
             {
-                switch (schema_now.kletka[changeable.X, changeable.Y].Name)
-                {
-                    case "resistor":
-                        schema_now.kletka[changeable.X, changeable.Y].R = k;
-                        break;
-                    case "battery":
-                        schema_now.kletka[changeable.X, changeable.Y].U = k;
-                        break;
-                    default:
-                        break;
-                }
+                case "resistor":
+                    logging("Изменены " + groupBox1.Text.ToLower() +" | "
+                        + schema_now.kletka[changeable.X, changeable.Y].R.ToString()+" -> "+k.ToString());
+                    schema_now.kletka[changeable.X, changeable.Y].R = k;
+                    break;
+                case "battery":
+                    logging("Изменены " + groupBox1.Text.ToLower() + " | "
+                        + schema_now.kletka[changeable.X, changeable.Y].U.ToString() + " -> " + k.ToString());
+                    schema_now.kletka[changeable.X, changeable.Y].U = k;
+                    break;
+                default:
+                    break;
             }
         }
         private PictureBox who_name(string name)
@@ -226,16 +249,19 @@ namespace electric_shema
             if (e.ClickedItem.Text == "Удалить")
             {
                 Point temp = who_clicked_box(contextMenuStrip1.SourceControl as PictureBox);
+                logging("Удален(а) "+beatifullName(kletka[temp.X, temp.Y].Name)+" ["+ temp.X.ToString()+ ", " + temp.Y.ToString()+"]");
                 kletka[temp.X, temp.Y].Name = null;
                 kletka[temp.X, temp.Y].Image = new Bitmap(50, 50);
                 schema_now.kletka[temp.X, temp.Y] = null;
                 schema_now.kletka[temp.X, temp.Y] = new box();
+                
             }
             else if (e.ClickedItem.Text == "Повернуть")
             {
                 if ((contextMenuStrip1.SourceControl as PictureBox).Image != null)
                 {
                     Point temp = who_clicked_box(contextMenuStrip1.SourceControl as PictureBox);
+                    logging("Поернут(а) " + beatifullName(kletka[temp.X, temp.Y].Name) + " [" + temp.X.ToString() + ", " + temp.Y.ToString()+"]");
                     if (schema_now.kletka[temp.X, temp.Y].Name != Provod_povorot.Name)
                     {
                         if (schema_now.kletka[temp.X, temp.Y].Rotate == 0)
@@ -275,8 +301,7 @@ namespace electric_shema
         }
         private void открытьToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            openFileDialog1.ShowDialog();
-            if (openFileDialog1.FileName != "")
+            if (openFileDialog1.ShowDialog() == DialogResult.OK && (openFileDialog1.FileName != ""))
             {
                 StreamReader se = new StreamReader(openFileDialog1.FileName);
                 string s = se.ReadLine();
@@ -314,15 +339,16 @@ namespace electric_shema
                 if (schema_now.Task.Laba)
                 {
                     richTextBox1.Text = schema_now.Task.Text;
-                    textBox3.Text = schema_now.Task.I.ToString();
-                    textBox4.Text = schema_now.Task.U.ToString();
-                    textBox5.Text = schema_now.Task.R.ToString();
+                    numericUpDown1.Value = (decimal)schema_now.Task.I;
+                    numericUpDown2.Value = (decimal)schema_now.Task.U;
+                    numericUpDown3.Value = (decimal)schema_now.Task.R;
                     checkBox1.Checked = false;
                     checkBox2.Checked = schema_now.Task.add_elements;
                     Elemets.Enabled = schema_now.Task.add_elements;
                     MessageBox.Show(schema_now.Task.Text,"Задача!");
                 }
                 se.Close();
+                logging("Открыт файл с "+ (schema_now.Task.Laba? "лабароторной":"схемой") + " в " + openFileDialog1.FileName);
             }
             delete_properties();
         }
@@ -334,6 +360,7 @@ namespace electric_shema
                 StreamWriter sw = new StreamWriter(saveFileDialog1.FileName);
                 sw.Write(JsonConvert.SerializeObject(schema_now));
                 sw.Close();
+                logging("Сохранен файл с " + (schema_now.Task.Laba ? "лабароторной" : "схемой")+" в "+saveFileDialog1.FileName);
             }
         }
 
@@ -402,6 +429,7 @@ namespace electric_shema
                 copied = who_clicked_box(contextMenuStrip1.SourceControl as PictureBox);
                 move = true;
                 вставитьToolStripMenuItem.Visible = true;
+                logging("Вырезан(а) "+beatifullName(kletka[copied.X,copied.Y].Name).ToLower() + " [" + copied.X.ToString() + ", " + copied.Y.ToString()+"]");
             }
         }
 
@@ -414,6 +442,7 @@ namespace electric_shema
                 copied = who_clicked_box(contextMenuStrip1.SourceControl as PictureBox);
                 move = false;
                 вставитьToolStripMenuItem.Visible = true;
+                logging("Скопирован(а) " + beatifullName(kletka[copied.X, copied.Y].Name).ToLower() + " [" + copied.X.ToString() + ", " + copied.Y.ToString()+"]");
             }
         }
 
@@ -437,6 +466,7 @@ namespace electric_shema
             }
             вставитьToolStripMenuItem.Visible = false;
             show_properties(temp.X, temp.Y);
+            logging("Вставлен(а) " + beatifullName(kletka[temp.X, temp.Y].Name).ToLower() + " [" + copied.X.ToString() + ", " + copied.Y.ToString()+"]");
         }
 
         double i = 0, u = 0, r = 0;
@@ -461,17 +491,22 @@ namespace electric_shema
             }
             if (valid)
             {
-                textBox1.Text = "I = " + (r > 0 ?(i = u / r).ToString():u.ToString()) + "; U = " + u.ToString() + "; R = " + r.ToString(); 
+                i = r > 0 ? (u / r) : u;
+                textBox1.Text = "I = " + i.ToString() + "; U = " + u.ToString() + "; R = " + r.ToString()+";"; 
                 if(schema_now.Task.Laba)
                 {
-                    int temp = 0;
+                    int temp = 1;
                     if (schema_now.Task.I == i) temp += 1;
                     if (schema_now.Task.U == u) temp += 1;
                     if (schema_now.Task.R == r) temp += 1;
                     progressBar1.Value = temp;
-                    if (temp == 3)
+                    if (temp == 4)
                     {
-                        if (!solved && !checkBox1.Checked) { solved = true; MessageBox.Show("Поздравляем!", "Вы решили задачу!"); }
+                        if (!solved && !checkBox1.Checked) {
+                            logging("Лабароторная решена!");
+                            solved = true;
+                            MessageBox.Show("Поздравляем!", "Вы решили задачу!");
+                        }
                     }
                     else solved = false;
                 }
@@ -483,10 +518,9 @@ namespace electric_shema
                 if (schema_now.Task.Laba) progressBar1.Value = 0;
             }
         }
+
         private bool isflip(int i,int j){ return schema_now.kletka[i, j].Name == Provod_povorot.Name; }
-
         private bool turn(int i, int j, int Angle) { return schema_now.kletka[i, j].Rotate == Angle; }
-
         private void dfs(int i,int j,int k)
         {
             if (!valid)
@@ -536,7 +570,6 @@ namespace electric_shema
             }
             else return;
         }
-
         private void up_dfs(int i, int j, int k)
         {
             if (i - 1 > 0 && schema_now.kletka[i - 1, j].Name != "")
@@ -582,31 +615,11 @@ namespace electric_shema
                                 else if (new Point(i, j - 1) == schema_now.battery && k > 1) { valid = true; return; }
                         }
         }
+
         private void создатьЛабароторнуюToolStripMenuItem_Click(object sender, EventArgs e)
         {
             CreateNewSchem(true);
             checkBox1.Checked = true;
-        }
-
-        private void textBox3_TextChanged(object sender, EventArgs e)
-        {
-            double k;
-            double.TryParse(textBox3.Text, out k);
-            schema_now.Task.I = k;
-        }
-
-        private void textBox4_TextChanged(object sender, EventArgs e)
-        {
-            double k;
-            double.TryParse(textBox4.Text, out k);
-            schema_now.Task.U = k;
-        }
-
-        private void textBox5_TextChanged(object sender, EventArgs e)
-        {
-            double k;
-            double.TryParse(textBox5.Text, out k);
-            schema_now.Task.R = k;
         }
 
         private void richTextBox1_TextChanged(object sender, EventArgs e)
@@ -614,19 +627,83 @@ namespace electric_shema
             schema_now.Task.Text = richTextBox1.Text;
         }
 
+        private void numericUpDown1_ValueChanged(object sender, EventArgs e)
+        {
+            logging("Условие лабароторной изменены (I) | "+ schema_now.Task.I.ToString() +" -> "+
+                numericUpDown1.Value.ToString());
+            schema_now.Task.I = (double)numericUpDown1.Value;
+        }
+
+        private void numericUpDown2_ValueChanged(object sender, EventArgs e)
+        {
+            logging("Условие лабароторной изменены (U) | " + schema_now.Task.U.ToString() + " -> " +
+                numericUpDown2.Value.ToString());
+            schema_now.Task.U = (double)numericUpDown2.Value;
+        }
+
+        private void numericUpDown3_ValueChanged(object sender, EventArgs e)
+        {
+            logging("Условие лабароторной изменены (R) | " + schema_now.Task.R.ToString() + " -> " +
+                numericUpDown3.Value.ToString());
+            schema_now.Task.R = (double)numericUpDown3.Value;
+        }
+
+        private void Form1_FormClosed(object sender, FormClosedEventArgs e)
+        {
+            logging("Программа закрыта.");
+            logger.Close();
+        }
+
         private void checkBox1_CheckedChanged(object sender, EventArgs e)
         {
             richTextBox1.Enabled = checkBox1.Checked;
-            textBox3.Enabled = checkBox1.Checked;
-            textBox4.Enabled = checkBox1.Checked;
-            textBox5.Enabled = checkBox1.Checked;
+            numericUpDown1.Enabled = checkBox1.Checked;
+            numericUpDown2.Enabled = checkBox1.Checked;
+            numericUpDown3.Enabled = checkBox1.Checked;
             checkBox2.Enabled = checkBox1.Checked;
+            logging("Редактировать лабароторную | "+ !checkBox1.Checked+" -> "+ checkBox1.Checked);
+        }
+
+        private void contextMenuStrip1_Opening(object sender, CancelEventArgs e)
+        {
+            if(schema_now.Task.Laba && !checkBox1.Checked && !checkBox1.Checked)
+            {
+                копироватьToolStripMenuItem.Visible = false;
+                удалитьToolStripMenuItem.Visible = false;
+            }
+            else
+            {
+                копироватьToolStripMenuItem.Visible = true;
+                удалитьToolStripMenuItem.Visible = true;
+            }
         }
 
         private void checkBox2_CheckedChanged(object sender, EventArgs e)
         {
             Elemets.Enabled = checkBox2.Checked;
             schema_now.Task.add_elements = checkBox2.Checked;
+            logging("Добавление элементов | " + !checkBox2.Checked + " -> " + checkBox2.Checked);
+        }
+        private string beatifullName(string name)
+        {
+            if (name == resistor.Name)
+                return "Резистор";
+            else if (name == battery.Name)
+                return "Батарея";
+            else if (name == voltmetr.Name)
+                return "Вольтметр";
+            else if (name == ampmetr.Name)
+                return "Амперметр";
+            else if (name == onof.Name)
+                return "Рычаг";
+            else if (name == Lampa.Name)
+                return "Лампа";
+            else if (name == Provod.Name)
+                return "Провод";
+            else if (name == Provod_povorot.Name)
+                return "Провод-поворот";
+            else
+                return "NULL";
         }
     }
 }
