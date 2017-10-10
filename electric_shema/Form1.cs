@@ -365,7 +365,7 @@ namespace electric_shema
                 Point temp = who_clicked_box(contextMenuStrip1.SourceControl as PictureBox);
                 logging("Удален(а) "+beatifullName(kletka[temp.X, temp.Y].Name)+" ["+ temp.X.ToString()+ ", " + temp.Y.ToString()+"]");
                 kletka[temp.X, temp.Y].Name = null;
-                kletka[temp.X, temp.Y].Image = new Bitmap(50, 50);
+                kletka[temp.X, temp.Y].Image = null;
                 schema_now.kletka[temp.X, temp.Y] = null;
                 schema_now.kletka[temp.X, temp.Y] = new box();
                 schema_now.power = false;
@@ -376,7 +376,7 @@ namespace electric_shema
                 if ((contextMenuStrip1.SourceControl as PictureBox).Image != null)
                 {
                     Point temp = who_clicked_box(contextMenuStrip1.SourceControl as PictureBox);
-                    logging("Поернут(а) " + beatifullName(kletka[temp.X, temp.Y].Name) + " [" + temp.X.ToString() + ", " + temp.Y.ToString()+"]");
+                    logging("Повернут(а) " + beatifullName(kletka[temp.X, temp.Y].Name) + " [" + temp.X.ToString() + ", " + temp.Y.ToString()+"]");
                     if (schema_now.kletka[temp.X, temp.Y].Name != Provod_povorot.Name)
                     {
                         if (schema_now.kletka[temp.X, temp.Y].Rotate == 0)
@@ -399,6 +399,10 @@ namespace electric_shema
                         schema_now.kletka[temp.X, temp.Y].Rotate += 90;
                         schema_now.kletka[temp.X, temp.Y].Rotate %= 360;
                     }
+                }
+                else
+                {
+                    MessageBox.Show("Ошибка!", "Нечего поворачивать!");
                 }
             }
         }
@@ -575,7 +579,7 @@ namespace electric_shema
             if (move)
             {
                 kletka[copied.X, copied.Y].Name = null;
-                kletka[copied.X, copied.Y].Image = new Bitmap(50, 50);
+                kletka[copied.X, copied.Y].Image = null;
                 if (schema_now.battery == copied) schema_now.battery = temp;
                  schema_now.kletka[copied.X, copied.Y] = new box();
                 move = false;
@@ -713,8 +717,8 @@ namespace electric_shema
         private bool availbe_point(int i,int j)
         {
             bool f = false;
-            if(i>0 && i<10)
-                if(j>0&&j<10)
+            if(i>=0 && i<10)
+                if(j>=0 && j<10)
                     if((schema_now.kletka[i, j].Name != null) && (schema_now.kletka[i, j].Name != ""))f = true;
             return f;
         }
