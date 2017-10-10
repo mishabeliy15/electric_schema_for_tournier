@@ -173,14 +173,16 @@ namespace electric_shema
                     delete_properties();
                     groupBox1.Visible = true;
                     groupBox1.Text = "Свойства лампы [" + i.ToString() + ", " + j.ToString() + "]";
-                    PropertiesLabels = new Label[1];
+                    PropertiesLabels = new Label[2];
+
                     PropertiesLabels[0] = new Label();
                     PropertiesLabels[0].Location = new Point(5, 20);
                     PropertiesLabels[0].Size = new Size(180, 25);
                     PropertiesLabels[0].Text = "Мощность (P, Ватт):";
                     this.groupBox1.Controls.Add(PropertiesLabels[0]);
 
-                    PropertiesNumBox = new NumericUpDown[1];
+                    PropertiesNumBox = new NumericUpDown[2];
+
                     PropertiesNumBox[0] = new NumericUpDown();
                     PropertiesNumBox[0].Name = "vatti";
                     PropertiesNumBox[0].Location = new Point(185, 20);
@@ -189,10 +191,34 @@ namespace electric_shema
                     PropertiesNumBox[0].Maximum = 10000;
                     PropertiesNumBox[0].Value = (decimal)schema_now.kletka[i, j].P;
                     PropertiesNumBox[0].Minimum = (decimal)0.01;
-                    schema_now.kletka[i, j].U = (double)PropertiesNumBox[0].Value;
+                    schema_now.kletka[i, j].P = (double)PropertiesNumBox[0].Value;
                     PropertiesNumBox[0].ValueChanged += numeric_ValueChanged;
                     this.groupBox1.Controls.Add(PropertiesNumBox[0]);
+                    try
+                    {
+                        PropertiesLabels[1] = new Label();
+                        PropertiesLabels[1].Location = new Point(5, 20 * 3);
+                        PropertiesLabels[1].Size = new Size(180, 25);
+                        PropertiesLabels[1].Text = "Сопротивление (R, Ом):";
+                        this.groupBox1.Controls.Add(PropertiesLabels[1]);
 
+                        PropertiesNumBox[1] = new NumericUpDown();
+                        PropertiesNumBox[1].Name = "soproti";
+                        PropertiesNumBox[1].Location = new Point(185, 20 * 3);
+                        PropertiesNumBox[1].Size = new Size(65, 25);
+                        PropertiesNumBox[1].DecimalPlaces = 2;
+                        PropertiesNumBox[1].Maximum = 1000000000;
+
+                        //schema_now.kletka[i, j].R = (schema_now.U * schema_now.U) / schema_now.kletka[i, j].P;
+                        if (textBox1.Text == "Цепь не замкнута!") schema_now.kletka[i, j].R = 0;
+                        PropertiesNumBox[1].Value = (decimal)schema_now.kletka[i, j].R;
+                        PropertiesNumBox[1].Minimum = 0;
+                        schema_now.kletka[i, j].R = (double)PropertiesNumBox[1].Value;
+                        //PropertiesNumBox[1].ValueChanged += change_value_lampa_P;
+                        PropertiesNumBox[1].Enabled = false;
+                        this.groupBox1.Controls.Add(PropertiesNumBox[1]);
+                    }
+                    catch { }
                     changeable = new Point(i, j);
                     logging("Отображенны " + groupBox1.Text.ToLower());
                     break;
@@ -214,10 +240,10 @@ namespace electric_shema
                     PropertiesNumBox[0].Size = new Size(65, 25);
                     PropertiesNumBox[0].DecimalPlaces = 2;
                     PropertiesNumBox[0].Maximum = 10000;
-                    PropertiesNumBox[0].Value = (decimal)schema_now.kletka[i, j].U;
+                    PropertiesNumBox[0].Value = (decimal)schema_now.U;
                     PropertiesNumBox[0].Minimum = (decimal)0.00;
                     PropertiesNumBox[0].Enabled = false;
-                    schema_now.kletka[i, j].U = (double)PropertiesNumBox[0].Value;
+                    schema_now.U = (double)PropertiesNumBox[0].Value;
                     //PropertiesNumBox[0].ValueChanged += numeric_ValueChanged;
                     this.groupBox1.Controls.Add(PropertiesNumBox[0]);
 
@@ -242,10 +268,10 @@ namespace electric_shema
                     PropertiesNumBox[0].Size = new Size(65, 25);
                     PropertiesNumBox[0].DecimalPlaces = 2;
                     PropertiesNumBox[0].Maximum = 10000;
-                    PropertiesNumBox[0].Value = (decimal)schema_now.kletka[i, j].I;
+                    PropertiesNumBox[0].Value = (decimal)schema_now.I;
                     PropertiesNumBox[0].Minimum = (decimal)0.00;
                     PropertiesNumBox[0].Enabled = false;
-                    schema_now.kletka[i, j].I = (double)PropertiesNumBox[0].Value;
+                    schema_now.I = (double)PropertiesNumBox[0].Value;
                     //PropertiesNumBox[0].ValueChanged += numeric_ValueChanged;
                     this.groupBox1.Controls.Add(PropertiesNumBox[0]);
 
@@ -342,6 +368,7 @@ namespace electric_shema
                 kletka[temp.X, temp.Y].Image = new Bitmap(50, 50);
                 schema_now.kletka[temp.X, temp.Y] = null;
                 schema_now.kletka[temp.X, temp.Y] = new box();
+                schema_now.power = false;
                 
             }
             else if (e.ClickedItem.Text == "Повернуть")
@@ -556,11 +583,12 @@ namespace electric_shema
             вставитьToolStripMenuItem.Visible = false;
             show_properties(temp.X, temp.Y);
             logging("Вставлен(а) " + beatifullName(kletka[temp.X, temp.Y].Name).ToLower() + " [" + copied.X.ToString() + ", " + copied.Y.ToString()+"]");
+            schema_now.power = false;
         }
 
         double i = 0, u = 0, r = 0;
         bool[,] f;
-        bool valid = false;
+        bool valid = false, empty_point = false;
         bool solved = false;
         private void timer1_Tick(object sender, EventArgs e)
         {
@@ -572,16 +600,22 @@ namespace electric_shema
                             schema_now.power = true;
                             schema_now.battery = new Point(i, j);
                         }
+
             if (schema_now.power)
             {
-                i = 0; u = 0; r = 0; f = new bool[10, 10]; valid = false;
+                i = 0; u = 0; r = 0; f = new bool[10, 10]; valid = false; empty_point = false;
                 for (int i = 0; i < 10; i++) for (int j = 0; j < 10; j++) f[i, j] = false;
                 dfs(schema_now.battery.X, schema_now.battery.Y, 0);
             }
-            if (valid)
+            else valid = false;
+
+            if (valid && !empty_point)
             {
                 i = r > 0 ? (u / r) : u;
-                textBox1.Text = "I = " + i.ToString() + "; U = " + u.ToString() + "; R = " + r.ToString()+";"; 
+                textBox1.Text = "I = " + i.ToString() + "; U = " + u.ToString() + "; R = " + r.ToString()+";";
+                schema_now.I = i;
+                schema_now.U = u;
+                schema_now.R = r;
                 if(schema_now.Task.Laba)
                 {
                     int temp = 1;
@@ -594,7 +628,7 @@ namespace electric_shema
                         if (!solved && !checkBox1.Checked) {
                             logging("Лабароторная решена!");
                             solved = true;
-                            MessageBox.Show("Поздравляем!", "Вы решили задачу!");
+                            MessageBox.Show("Вы решили задачу!", "Поздравляем!");
                         }
                     }
                     else solved = false;
@@ -602,9 +636,14 @@ namespace electric_shema
             }
             else
             {
-                textBox1.Text = "Цепь не замкнута!";
+                if (!schema_now.power) textBox1.Text = "Отсутсвует источник питание!";
+                else textBox1.Text = "Цепь не замкнута!";
+
                 solved = false;
                 if (schema_now.Task.Laba) progressBar1.Value = 0;
+                schema_now.I = 0;
+                schema_now.U = 0;
+                schema_now.R = 0;
             }
         }
 
@@ -626,15 +665,15 @@ namespace electric_shema
                 else if (schema_now.kletka[i, j].Name == Lampa.Name)
                 {
                     //P=U^2/R -> R = U^2/P
-                    r += (u * u) / schema_now.kletka[i, j].P;
+                    schema_now.kletka[i, j].R = (u * u) / schema_now.kletka[i, j].P;
                 }
                 else if (schema_now.kletka[i, j].Name == voltmetr.Name)
                 {
-                    schema_now.kletka[i, j].U = u;
+                    schema_now.kletka[i, j].U = schema_now.U;
                 }
                 else if (schema_now.kletka[i, j].Name == ampmetr.Name)
                 {
-                    schema_now.kletka[i, j].I = u / (r > 0 ? r : 1);
+                    schema_now.kletka[i, j].I = schema_now.I;
                 };
                 if (!isflip(i,j))
                     switch (schema_now.kletka[i, j].Rotate)
@@ -671,9 +710,17 @@ namespace electric_shema
             }
             else return;
         }
+        private bool availbe_point(int i,int j)
+        {
+            bool f = false;
+            if(i>0 && i<10)
+                if(j>0&&j<10)
+                    if((schema_now.kletka[i, j].Name != null) && (schema_now.kletka[i, j].Name != ""))f = true;
+            return f;
+        }
         private void up_dfs(int i, int j, int k)
         {
-            if (i - 1 > 0 && schema_now.kletka[i - 1, j].Name != "")
+            if (availbe_point(i - 1, j))
                 if (!f[i - 1, j] || (new Point(i - 1, j) == schema_now.battery && k > 1))
                     if (schema_now.kletka[i - 1, j].Name != onof.Name || (schema_now.kletka[i - 1, j].on_of))
                     {
@@ -681,10 +728,13 @@ namespace electric_shema
                             if (!f[i - 1, j]) dfs(i - 1, j, k + 1);
                             else if (new Point(i - 1, j) == schema_now.battery && k > 1) { valid = true; return; }
                     }
+                    else { }
+                else { }
+            else empty_point = true;
         }
         private void down_dfs(int i,int j,int k)
         {
-            if (i + 1 < 10 && schema_now.kletka[i + 1, j].Name != "")
+            if (availbe_point(i + 1, j))
                 if (!f[i + 1, j] || (new Point(i + 1, j) == schema_now.battery && k > 1))
                     if (schema_now.kletka[i + 1, j].Name != onof.Name || (schema_now.kletka[i + 1, j].on_of))
                     {
@@ -692,10 +742,13 @@ namespace electric_shema
                             if (!f[i + 1, j]) dfs(i + 1, j, k + 1);
                             else if (new Point(i + 1, j) == schema_now.battery && k > 1) { valid = true; return; }
                     }
+                    else { }
+                else { }
+            else empty_point = true;
         }
         private void right_dfs(int i, int j, int k)
         {
-            if (j + 1 < 10 && schema_now.kletka[i, j + 1].Name != "")
+            if (availbe_point(i, j + 1))
                 if (!f[i, j + 1] || (new Point(i, j + 1) == schema_now.battery && k > 1))
                     if (schema_now.kletka[i, j + 1].Name != onof.Name || (schema_now.kletka[i, j + 1].on_of))
                     {
@@ -703,18 +756,23 @@ namespace electric_shema
                             if (!f[i, j + 1]) dfs(i, j + 1, k + 1);
                             else if (new Point(i, j + 1) == schema_now.battery && k > 1) { valid = true; return; }
                     }
+                    else { }
+                else { }
+            else empty_point = true;
         }
         private void left_dfs(int i, int j, int k)
         {
-            if (!f[i, j - 1] || (new Point(i, j - 1) == schema_now.battery && k > 1))
-                if (j - 1 > 0 && schema_now.kletka[i, j - 1].Name != "")
-                    if (!f[i, j - 1] || (new Point(i, j - 1) == schema_now.battery && k > 1))
-                        if (schema_now.kletka[i, j - 1].Name != onof.Name || (schema_now.kletka[i, j - 1].on_of))
-                        {
-                            if ((!isflip(i, j - 1) && turn(i, j - 1, 0)) || (isflip(i, j - 1) && (turn(i, j - 1, 180) || turn(i, j - 1, 270))))
-                                if (!f[i, j - 1]) dfs(i, j - 1, k + 1);
-                                else if (new Point(i, j - 1) == schema_now.battery && k > 1) { valid = true; return; }
-                        }
+            if (availbe_point(i, j - 1))
+                if (!f[i, j - 1] || (new Point(i, j - 1) == schema_now.battery && k > 1))
+                    if (schema_now.kletka[i, j - 1].Name != onof.Name || (schema_now.kletka[i, j - 1].on_of))
+                    {
+                        if ((!isflip(i, j - 1) && turn(i, j - 1, 0)) || (isflip(i, j - 1) && (turn(i, j - 1, 180) || turn(i, j - 1, 270))))
+                            if (!f[i, j - 1]) dfs(i, j - 1, k + 1);
+                            else if (new Point(i, j - 1) == schema_now.battery && k > 1) { valid = true; return; }
+                    }
+                    else { }
+                else { }
+            else empty_point = true;
         }
 
         private void создатьЛабароторнуюToolStripMenuItem_Click(object sender, EventArgs e)
@@ -767,7 +825,7 @@ namespace electric_shema
 
         private void contextMenuStrip1_Opening(object sender, CancelEventArgs e)
         {
-            if(schema_now.Task.Laba && !checkBox1.Checked && !checkBox1.Checked)
+            if(schema_now.Task.Laba && !checkBox1.Checked && !checkBox2.Checked)
             {
                 копироватьToolStripMenuItem.Visible = false;
                 удалитьToolStripMenuItem.Visible = false;
