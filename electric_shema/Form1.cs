@@ -816,7 +816,7 @@ namespace electric_shema
 
         private void checkBox1_CheckedChanged(object sender, EventArgs e)
         {
-            richTextBox1.Enabled = checkBox1.Checked;
+            richTextBox1.ReadOnly = !checkBox1.Checked;
             numericUpDown1.Enabled = checkBox1.Checked;
             numericUpDown2.Enabled = checkBox1.Checked;
             numericUpDown3.Enabled = checkBox1.Checked;
