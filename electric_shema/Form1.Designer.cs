@@ -331,7 +331,7 @@
             // 
             this.создатьЛабароторнуюToolStripMenuItem.Name = "создатьЛабароторнуюToolStripMenuItem";
             this.создатьЛабароторнуюToolStripMenuItem.Size = new System.Drawing.Size(246, 26);
-            this.создатьЛабароторнуюToolStripMenuItem.Text = "Создать лабароторную";
+            this.создатьЛабароторнуюToolStripMenuItem.Text = "Создать лабораторную";
             this.создатьЛабароторнуюToolStripMenuItem.Click += new System.EventHandler(this.создатьЛабароторнуюToolStripMenuItem_Click);
             // 
             // timer1

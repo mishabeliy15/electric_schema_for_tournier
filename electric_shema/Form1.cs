@@ -173,7 +173,7 @@ namespace electric_shema
                     delete_properties();
                     groupBox1.Visible = true;
                     groupBox1.Text = "Свойства лампы [" + i.ToString() + ", " + j.ToString() + "]";
-                    PropertiesLabels = new Label[2];
+                    PropertiesLabels = new Label[1];
 
                     PropertiesLabels[0] = new Label();
                     PropertiesLabels[0].Location = new Point(5, 20);
@@ -181,7 +181,7 @@ namespace electric_shema
                     PropertiesLabels[0].Text = "Мощность (P, Ватт):";
                     this.groupBox1.Controls.Add(PropertiesLabels[0]);
 
-                    PropertiesNumBox = new NumericUpDown[2];
+                    PropertiesNumBox = new NumericUpDown[1];
 
                     PropertiesNumBox[0] = new NumericUpDown();
                     PropertiesNumBox[0].Name = "vatti";
@@ -194,7 +194,7 @@ namespace electric_shema
                     schema_now.kletka[i, j].P = (double)PropertiesNumBox[0].Value;
                     PropertiesNumBox[0].ValueChanged += numeric_ValueChanged;
                     this.groupBox1.Controls.Add(PropertiesNumBox[0]);
-                    try
+                    /*try
                     {
                         PropertiesLabels[1] = new Label();
                         PropertiesLabels[1].Location = new Point(5, 20 * 3);
@@ -218,7 +218,7 @@ namespace electric_shema
                         PropertiesNumBox[1].Enabled = false;
                         this.groupBox1.Controls.Add(PropertiesNumBox[1]);
                     }
-                    catch { }
+                    catch { }*/
                     changeable = new Point(i, j);
                     logging("Отображенны " + groupBox1.Text.ToLower());
                     break;
@@ -402,7 +402,7 @@ namespace electric_shema
                 }
                 else
                 {
-                    MessageBox.Show("Ошибка!", "Нечего поворачивать!");
+                    MessageBox.Show("Нечего поворачивать!", "Ошибка!");
                 }
             }
         }
@@ -669,7 +669,7 @@ namespace electric_shema
                 else if (schema_now.kletka[i, j].Name == Lampa.Name)
                 {
                     //P=U^2/R -> R = U^2/P
-                    schema_now.kletka[i, j].R = (u * u) / schema_now.kletka[i, j].P;
+                    //schema_now.kletka[i, j].R = (u * u) / schema_now.kletka[i, j].P;
                 }
                 else if (schema_now.kletka[i, j].Name == voltmetr.Name)
                 {
